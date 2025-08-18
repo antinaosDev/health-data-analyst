@@ -134,11 +134,11 @@ else:
     with st.container(border=True):
         col1, col2, col3 = st.columns([1, 5, 1])
         with col1:
-            st.image("D:/DESARROLLO PROGRAMACION/data_health/logo_data_s.png", width=90)
+            st.image("logo_data_s.png", width=90)
         with col2:
             st.markdown("<h1 style='margin: 0; color: #0072B2;text-align: center ;'>Análisis de Datos Salud</h1>", unsafe_allow_html=True)
         with col3:
-            st.image("D:/DESARROLLO PROGRAMACION/data_health/logo_alain.png", width=120)
+            st.image("logo_alain.png", width=120)
 
     # ------------------ DEFINICIÓN DE PÁGINAS -------------------
     pages = {
