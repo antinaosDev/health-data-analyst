@@ -464,7 +464,7 @@ def footer():
     with st.container():
         col1, col2, col3, col4 = st.columns([3,1,5,1])
         with col2:
-            logo = load_logo(r"D:\DESARROLLO PROGRAMACION\data_health\logo_alain.png")
+            logo = load_logo("logo_alain.png")
             st.image(logo, width=150)
         with col3:
             st.markdown("""
