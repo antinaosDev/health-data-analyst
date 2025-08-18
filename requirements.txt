@@ -1,7 +1,10 @@
 streamlit
-firebase-admin
 pandas
-fpdf
-xlsxwriter
+chardet
+numpy
 plotly
 Pillow
+altair
+polars
+requests
+firebase-admin
