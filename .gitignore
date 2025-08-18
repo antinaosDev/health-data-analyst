@@ -12,5 +12,5 @@ __pycache__/
 
 
 # Ignorar credenciales Firebase y archivos sensibles
-turnos-gest-firebase-adminsdk-fbsvc-86ffe31612.json
+data-salud-firebase-adminsdk-fbsvc-7956c136fe.json
 .streamlit/secrets.toml

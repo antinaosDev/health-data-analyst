@@ -54,3 +54,6 @@ def borrar_registro(tabla_nom, id_reg):
         print(f'Registro eliminado de {tabla_nom} con ID: {id_reg}')
     except Exception as e:
         print(f'Error al eliminar el registro: {e}')
+
+
+ingresar_registro_bd('login',{'USER':'alain_adm1','PASS':'supad_alain1','ROL':'PROGRAMADOR'})
