@@ -129,7 +129,6 @@ def pagina_login():
 if not st.session_state["logged_in"]:
     pagina_login()
 else:
-    st.success(f"Bienvenido, {st.session_state['usuario']} 👋 (Rol: {st.session_state['rol']})")
 
     # ------------------ ENCABEZADO -------------------
     with st.container(border=True):

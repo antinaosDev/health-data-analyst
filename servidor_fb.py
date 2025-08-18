@@ -56,4 +56,3 @@ def borrar_registro(tabla_nom, id_reg):
         print(f'Error al eliminar el registro: {e}')
 
 
-ingresar_registro_bd('login',{'USER':'alain_adm1','PASS':'supad_alain1','ROL':'PROGRAMADOR'})
