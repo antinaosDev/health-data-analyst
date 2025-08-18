@@ -99,7 +99,7 @@ def pagina_login():
             st.markdown('<div class="login-container">', unsafe_allow_html=True)
 
             # Logo
-            st.image(r"D:\DESARROLLO PROGRAMACION\STREAMLIT\proyecto_gastos\logo_nuevo.png", width=100)
+            st.image("logo_data_s.png", width=100)
 
             st.markdown('<div class="title">Iniciar Sesión</div>', unsafe_allow_html=True)
             usuario_input = st.text_input("Nombre de usuario", max_chars=30)
