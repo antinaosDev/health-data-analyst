@@ -9,6 +9,33 @@ import plotly.graph_objects as go
 
 st.title("🌍Consulta de Sector y Distrito")
 
+import streamlit as st
+
+# Crear dos columnas con proporciones: 1:2 (logo : info)
+columna1, columna2 = st.columns([1,2])
+
+with columna1:
+    # Centrar el logo
+    st.image(load_logo("cartografia.png"))
+
+with columna2:
+    st.subheader('Profesionales sectorizados')
+
+    # Crear "tarjetas" visuales para cada profesional
+    st.markdown(
+        """
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div style="background-color:#f0f2f6; padding:10px; border-radius:10px;">
+                <h4 style="margin:0; color:#2E86C1;">Enfermería</h4>
+            </div>
+            <div style="background-color:#f0f2f6; padding:10px; border-radius:10px;">
+                <h4 style="margin:0; color:#28B463;">Matronería</h4>
+            </div>
+        </div>
+        """, unsafe_allow_html=True
+    )
+
+
 st.info(
     """
     ℹ️ **Información importante**
