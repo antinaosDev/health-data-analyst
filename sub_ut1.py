@@ -31,7 +31,7 @@ with col2:
     if "df_autorizados" in st.session_state and st.session_state.df_autorizados is not None:
         st.info("Información disponible ✔️")
     else:
-        st.warning("Primero debe cargar información en Análisis Percápita",width=20)
+        st.warning("Primero debe cargar información en Análisis Percápita")
 
 # Botón Clasificación GES
 with col3:
