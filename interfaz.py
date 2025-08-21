@@ -1,5 +1,6 @@
 import streamlit as st
 from servidor_fb import *
+from analisis_func import *
 
 # ---------- Configuración de página ----------
 st.set_page_config(page_title="Análisis y Gestión de datos Salud", page_icon="🩺", layout="wide")
@@ -81,6 +82,8 @@ label {
 </style>
 """, unsafe_allow_html=True)
 
+
+
 # ---------- Verificación de login con base de datos ----------
 def verificar_login(usuario, password):
     data_login = leer_registro('login')
@@ -140,17 +143,21 @@ else:
         with col3:
             st.image("logo_alain.png", width=120)
 
+
     # ------------------ DEFINICIÓN DE PÁGINAS -------------------
     pages = {
-        'Análisis y estadística📊': [
-            st.Page("analisis_agenda.py", title="Análisis Agenda Médica", icon="🖱️"),
-            st.Page("analisis_percapita.py", title="Análisis Percápita", icon="📈")
+        '📊Análisis y estadística': [
+            st.Page("analisis_agenda.py", title="-🖱️Análisis Agenda Médica"),
+            st.Page("analisis_percapita.py", title="-📈Análisis Percápita")
         ],
-        'Categorización Diagnóstico🩺': [
-            st.Page("categorizacion_ges.py", title="Preclasificador GES", icon="🏥")
+        '🩺Categorización Diagnóstico': [
+            st.Page("categorizacion_ges.py", title="-🏥Preclasificador GES")
         ],
-        'Utilidades🛠️': [
-            st.Page("sub_ut1.py", title="Combinador de documentos🖇️"),
+        '🌍Sectorización': [
+           st.Page("sub_ut2.py", title="-👥Identificación usuarios"),
+        ],
+        '🛠️Utilidades': [
+            st.Page("sub_ut1.py", title="-🖇️Combinador de documentos"),
         ]
     }
 

@@ -120,7 +120,7 @@ def procesamiento_agenda(lista_dfs):
 
     
     cols_work = [
-        "RUT", "GENERO", "COMUNA", "PROCEDENCIA", "PAIS DE PROCEDENCIA", "ETNIA PERCEPCION", "ESCOLARIDAD",
+        "RUT", "GENERO","DIRECCION", "COMUNA", "PROCEDENCIA", "PAIS DE PROCEDENCIA", "ETNIA PERCEPCION", "ESCOLARIDAD",
         "SITUACION CALLE","ES DISCAPACITADA","ES SENAME","ES EMBARAZADA","RUT PROFESIONAL",
         "PREVISION", "FECHA NACIMIENTO", "ESPECIALIDAD", "SUBESPECIALIDAD", "POLICLINICO", "AGRUPACION", 
         "ESTABLECIMIENTO", "HORA GENERADA", "ESTADO HORA", "ESTADO ATENCION", "ACCION A TOMAR", 
@@ -293,7 +293,21 @@ def procesamiento_agenda(lista_dfs):
     #creacion columna dia
     df_concat['DIA_ASIG_HR'] = df_concat["FECHA ASIGNADA"].dt.day.astype('Int64')
     #creacion columna mes
-    df_concat['MES_ASIG_HR'] = df_concat["FECHA ASIGNADA"].dt.month_name(locale='es_ES')
+    MESES_ES = {
+    1: 'Enero',
+    2: 'Febrero',
+    3: 'Marzo',
+    4: 'Abril',
+    5: 'Mayo',
+    6: 'Junio',
+    7: 'Julio',
+    8: 'Agosto',
+    9: 'Septiembre',
+    10: 'Octubre',
+    11: 'Noviembre',
+    12: 'Diciembre'
+}
+    df_concat['MES_ASIG_HR'] = df_concat['FECHA ASIGNADA'].dt.month.map(MESES_ES)
     #creacion columna año
     df_concat['ANIO_ASIG_HR'] = df_concat["FECHA ASIGNADA"].dt.year.astype('Int64')
     
@@ -304,7 +318,22 @@ def procesamiento_agenda(lista_dfs):
     #creacion columna mes
     df_concat['DIA_EJEC_HR'] = df_concat["FECHA EJECUTADA"].dt.day.astype('Int64')
     #creacion columna mes
-    df_concat['MES_EJEC_HR'] = df_concat["FECHA EJECUTADA"].dt.month_name(locale='es_ES')
+    MESES_ES = {
+    1: 'Enero',
+    2: 'Febrero',
+    3: 'Marzo',
+    4: 'Abril',
+    5: 'Mayo',
+    6: 'Junio',
+    7: 'Julio',
+    8: 'Agosto',
+    9: 'Septiembre',
+    10: 'Octubre',
+    11: 'Noviembre',
+    12: 'Diciembre'
+}
+
+    df_concat['MES_EJEC_HR'] = df_concat['FECHA EJECUTADA'].dt.month.map(MESES_ES)
     #creacion columna año
     df_concat['ANIO_EJEC_HR'] = df_concat["FECHA EJECUTADA"].dt.year.astype('Int64')
 
@@ -363,7 +392,22 @@ def reporte_percapita(archivos):
         df_per['FECHA_CORTE'] = pd.to_datetime(df_per['FECHA_CORTE'], errors="coerce") #coerce convierte fechas inválidas en NaT
 
         df_per['ANIO_CORTE'] = df_per['FECHA_CORTE'].dt.year
-        df_per['MES_CORTE'] = df_per['FECHA_CORTE'].dt.month_name(locale='es_ES')
+        MESES_ES = {
+        1: 'Enero',
+        2: 'Febrero',
+        3: 'Marzo',
+        4: 'Abril',
+        5: 'Mayo',
+        6: 'Junio',
+        7: 'Julio',
+        8: 'Agosto',
+        9: 'Septiembre',
+        10: 'Octubre',
+        11: 'Noviembre',
+        12: 'Diciembre'
+    }
+    
+        df_per['MES_CORTE'] = df_per['FECHA_CORTE'].dt.month.map(MESES_ES)
 
         #----------------Calcular edad---------------------------------------
         # Asegura que la columna esté en formato datetime
@@ -453,6 +497,361 @@ def reporte_percapita(archivos):
 
     return df_per,df_per_auth,df_per_fall
 
+
+
+
+@st.cache_data(ttl=600)
+def normaliza_direcc(df):
+    import re
+    import unicodedata  # <-- Esto faltaba
+    # --- Funciones de limpieza ---
+    # 1️⃣ Normalizar mayúsculas y eliminar tildes
+    def normalizar_texto(texto):
+        texto = str(texto).upper()
+        texto = ''.join(c for c in unicodedata.normalize('NFD', texto)
+                        if unicodedata.category(c) != 'Mn')
+        return texto
+
+    # 2️⃣ Limpiar caracteres raros y múltiples espacios
+    def limpiar_basico(texto):
+        texto = re.sub(r'[^A-Z0-9Ñ\s]', ' ', texto)  # eliminar símbolos raros
+        texto = re.sub(r'\s+', ' ', texto).strip()   # quitar espacios extras
+        return texto
+
+    # 3️⃣ Normalizar abreviaturas comunes
+    def normalizar_abreviaturas(texto):
+        reemplazos = {
+            r'\bN[º°?.]?\b': ' NUMERO ',
+            r'\bS/N\b': ' SIN NUMERO ',
+            r'\bSN\b': ' SIN NUMERO ',
+            r'\bCAM\b': ' CAMINO ',
+            r'\bLG\b': ' LUGAR ',
+            r'\bPJE\b': ' PASAJE ',
+        }
+        for patron, reemplazo in reemplazos.items():
+            texto = re.sub(patron, reemplazo, texto)
+        return texto
+
+    # 4️⃣ Corregir errores frecuentes
+    errores_comunes = {
+        "CARRERRI E": "CARRERRENE",
+        "CARRERRIA": "CARRERRENE",
+        "CARRERRIÑE": "CARRERRENE",
+        "CHOL CHOL": "CHOLCHOL",
+    }
+
+    def corregir_errores(texto):
+        for mal, bien in errores_comunes.items():
+            texto = texto.replace(mal, bien)
+        return texto
+
+    # --- Pipeline completo ---
+    def limpiar_direccion(texto):
+        texto = normalizar_texto(texto)
+        texto = limpiar_basico(texto)
+        texto = normalizar_abreviaturas(texto)
+        texto = corregir_errores(texto)
+        return texto
+
+    # Aplicar limpieza a la columna 'DIRECCION'
+    df['DIRECCION_NORM'] = df['DIRECCION'].apply(limpiar_direccion)
+
+    # Mostrar ejemplo
+    print(df[['DIRECCION', 'DIRECCION_NORM']].head(20))
+
+    # Diccionario de sectores a distritos
+    sector_a_distrito = {
+        "CHOLCHOL": "cholchol",
+        "CULLINCO": "repocura",
+        "RAPAHUE": "rapahue",
+        "CURACO TRAÑI TRAÑI": "cholchol",
+        "CURACO": "cholchol",
+        "REPOCURA": "repocura",
+        "HUECHUCON": "carirriñe",
+        "HUIÑOCO": "carirriñe",
+        "CARIRRIÑE": "carirriñe",
+        "LAUNACHE": "repocura",
+        "ROMULHUE": "carirriñe",
+        "COIHUE CURACO": "cholchol",
+        "LLANQUINAO": "tranahuillin",
+        "COIHUE CURACO": "cholchol",
+        "COILACO": "cholchol",
+        "HUAMAQUI":  "repocura",  # Puede aparecer en distintos distritos
+        "COIHUE":"cholchol",
+        "CARRERRE":"carirriñe",
+        "RUCUPURA":"repocura",
+        "HUINOCO":"carirriñe",
+        "CARRIRRE":"carirriñe",
+        "RUCAPANGUI":"rapahue",
+        "RUKA":"rapahue",
+        "DOLLINCO":"rapahue",
+        "ANCAPULLI":"repocura",
+        "QUIRQUEN":"repocura",
+        "CARRERENI":"carirriñe",
+        "QUILQUEN":"repocura",
+        "RAHUE":"rapahue",
+        "COPINCHE":"carirriñe",
+        "PRITACO":"cholchol",
+        "TOSCA":"cholchol",
+        "CARRERRENE":"carirriñe",
+        "RENACO":"tranahuillin",
+        "CARRERRINE":"carirriñe",
+        "PASTALES":"tranahuillin",
+        "RUKAPAGUE":"rapahue",
+        "CAUTINCHE":"carirriñe",
+        "HUICHUCON":"carirriñe",
+        "CARRERRENI":"carirriñe",
+        "BISQUICO":"tranahuillin",
+        "QUILACO":"cholchol",
+        "HUEICO":"repocura",
+        "PEMURREHUE":"carirriñe",
+        "HUITRAMALAL":"repocura",
+        "LA FORESTA":"tranahuillin",
+        "HUENTELAR":"repocura",
+        "CARRERI":"carirriñe",
+        "RUPANGUI":"rapahue",
+        "RUCAPANJUE":"rapahue",
+        "RUKAPANGUI":"rapahue",
+        "CARRARRE":"carirriñe",
+        "RUCAPANHUE":"rapahue",
+        "RINCON":"repocura",
+        "HUIRILEF":"cholchol",
+        "COLILACO":"cholchol",
+        "RANACO":"tranahuillin",
+        "MALLALCHE":"carirriñe",
+        "CARRERENE":"carirriñe",
+        "COHIHUE":"cholchol",
+        "PITRCO":"cholchol",
+        "CHOL":"cholchol",
+        "CCHOL":"cholchol",
+        "CATRIMALAL":"carirriñe",
+        "CHIVILCOYAN":"carirriñe",
+        "HUENTELER":"repocura",
+        "CARERRE":"carirriñe",
+        "CARRIRREA":"carrirriñe",
+        "ANCAPULLA":"repocura",
+        "HUAMAQU":"repocura",
+        "HUAMAQUE":"repocura",
+        "CIOHUE":"cholchol",
+        "PICUTA":"rapahue",
+        "HUAMPOMALLIN":"cholchol",
+        "TRANAHULLIN":"tranahuillin",
+        "TRANITRANI":"cholchol",
+        "QUILIMANZANO":"carirriñe",
+        "CARRIRRINE":"carirriñe",
+        "TRAMAHUILLIN":"tranahuillin",
+        "QUILI":"carirriñe",
+        "CARRE":"carirriñe",
+        "CAUTINCE":"carirriñe",
+        "RINE":"carirriñe",
+        "TRANAULLIN":"tranahuillin",
+        "TRNAHUILLIN":"tranahuillin",
+        "MALLACHE":"carirriñe",
+        "RUCA":"rapahue",
+        "PANGUE":"rapahue",
+        "MALALCE":"carirriñe",
+        "NOTROMAHUIDA":"tranahuillin",
+        "QUELIMANZANO":"carirriñe",
+        "MALALCHE":"carirriñe",
+        "QUELI":"carirriñe",
+        "MANZANO":"carirriñe",
+        "LOS CARRIZOS": "cholchol",
+        "DURAZNOS":"cholchol",
+        "REPUCURA":"repocura",
+        "CARRIRRENE":"carirriñe",
+        "MADILHUE":"repocura",
+        "CARRERINE":"carirriñe",
+        "PEMU":"tranahuillin",
+        "REHUE":"tranahuillin",
+        "MALACHE":"repocura",
+        "SECTOR LOS DURAZNOS": "cholchol",
+        "PITRACO BANDERA": "cholchol",
+        "TRANAHUILLIN": "tranahuillin",
+        "CUYINCO": "repocura",
+        "RUCAPANGUE": "rapahue",
+        "BOLDOCHE": "carirriñe",
+        "RUCAPANGUE": "rapahue",
+        "PITRACO": "cholchol",
+        "SANTA CAROLINA": "cholchol",
+        "PEUCHEN": "cholchol",
+        "CURANILAHUE": "cholchol",
+        "HIÑOCO": "carirriñe",
+        "SANTA ROSA": "tranahuillin",
+        "VILLA":"cholchol",
+        "PIUCHEN":"cholchol",
+        "VISQUICO":"tranahuillin",
+        "BISQUICO":"tranahuillin",
+        "CODIHUE":"rapahue",
+        "CODIHUE 0310":"rapahue",
+        "CODIHUE S":"rapahue",
+        "MALACHI":"carirriñe",
+        "MALANCHE":"carirriñe",
+        "MALALYE":"carirriñe",
+        "MALALCHE":"carirriñe",
+        "MALALCHA":"carirriñe",
+        "MAALCHE":"carirriñe",
+        "COIPUCO":"repocura",
+        "TRA I TRA I":"cholchol",
+        "PITRA":"cholchol",
+        "CAUTIMCHE":"carirriñe",
+        "CAUTINCHE":"carirriñe",
+        "TRANAMULLIN":"tranahuillin",
+        "BOLILCHE":"carirriñe",
+        "TROMEGUIELU":"carirriñe",
+        "TROMENUELO":"carirriñe",
+        "TROMENELO":"carirriñe",
+        "TROME IELO":"carirriñe",
+        "TROMEYELO":"carirriñe",
+        "TROMEGUIELO":"carirriñe",
+        "TROMENIELO":"carirriñe",
+        "BOYECO":"tranahuillin",
+        "BOY":"tranahuillin",
+        "TRANA":"tranahuillin",
+        "TROMEN":"tranahuillin",
+        "TROMIA ELO":"carirriñe",
+        "TROMILLELO":"carirriñe",
+        "TROMINELO":"carirriñe",
+        "NUTR":"tranahuillin",
+        "TRANI TRANI":"cholchol",
+        "TROMIYELO":"carirriñe",
+        "HUENTELAL":"repocura",
+        "DOYINCO":"rapahue",
+        "DOLLINCO":"rapahue",
+        "DOLL":"rapahue",
+        "PEREZ": "cholchol",
+        "PERES": "cholchol",
+        "PINTO": "cholchol",
+        "PRAT": "cholchol",
+        "BALMACEDA": "cholchol",
+        "ERRAZURIZ": "cholchol",
+        "ERAZURIZ": "cholchol",
+        "LASTARRIA": "cholchol",
+        "LAZCANO": "cholchol",
+        "OHIGGINS": "cholchol",
+        "O'HIGGINS": "cholchol",
+        "SAAVEDRA": "cholchol",
+        "PORTALES": "cholchol",
+        "MACKENNA": "cholchol",
+        "MANUEL MONTT": "cholchol",
+        "RECREO": "cholchol",
+        "PRAT": "cholchol",
+        "ALDUNATE": "cholchol",
+        "RAYEN": "cholchol",
+        "NUEVA UNO": "cholchol",
+        "NUEVA DOS": "cholchol",
+        "HUI OCO":"carirriñe",
+        "SECTOR DURAZNO":"cholchol",
+        "ANCAP":"carirriñe",
+        "COI":"cholchol",
+        "CARRI":"carirriñe",
+        "HUI":"carirriñe",
+        "TRAA":"cholchol",
+        "PASAJE LA ARAUCARIA  NUMERO  21": "cholchol",
+        "COLO COLO": "cholchol",
+        "LOS PIONEROS": "cholchol",
+        "ANTONIO": "cholchol",
+        "ANCULEO": "cholchol",
+        "AMUNATEGUI S": "cholchol",
+        "ERRAZURIS 0213": "cholchol",
+        "CALLE CL NAMBRARD 06005 DP 110 BL 2 V ALLIPEN S  NUMERO": "cholchol",
+        "SMIDT S": "cholchol",
+        "IGNACIO": "cholchol",
+        "DURAZNO": "cholchol",
+        "PIONEROS": "cholchol",
+        "MAITENES": "cholchol",
+        "TARRIA": "cholchol",
+        "MACKENA": "cholchol",
+        "LASCANO": "cholchol",
+        "ANCAPULLY": "carirriñe",
+        "MONTT": "cholchol",
+        "CALLE 2471019 S  NUMERO": "cholchol",
+        "AUDOLIA MILLAPAN  NUMERO  1101 VISTA HERMOSA": "cholchol",
+        "ERRASURIZ": "cholchol",
+        "LICEO GUACOLDA": "cholchol",
+        "LINGUE MALLIN": "cholchol",
+        "LAS TARRIAS": "cholchol",
+        "COIGUE": "cholchol",
+        "SANTA LAURA": "cholchol",
+        "ANCAPULI": "carirriñe",
+        "SHMIT": "cholchol",
+        "LAZCA": "cholchol",
+        "CHAMIL": "cholchol",
+        "CALLE IGN S": "cholchol",
+        "ERCILLA": "cholchol",
+        "LAS HORTENCIAS": "cholchol",
+        "CALLE LOS TREBOLES": "cholchol",
+        "CARRIRRI E": "carirriñe",
+        "PELLAHUEN": "repocura",
+        "COLO COLO": "cholchol",
+        "ZEDAN": "cholchol",
+        "PONEROS": "cholchol",
+        "SAN MATEO": "cholchol",
+        "PIONEROS": "cholchol",
+        "CALLE ERCILLA  NUMERO  529": "cholchol",
+        "MILLAPAN": "cholchol",
+        "MONTT": "cholchol",
+        "CALLE HUI OCO S  NUMERO  S  NUMERO": "carirriñe",
+        "TARRIAS": "cholchol",
+        "LOS SAUCES 150": "cholchol",
+        "CALLE GALVARINO": "cholchol",
+        "LASCANO": "cholchol",
+        "CALLE LAUTARO  NUMERO  429": "cholchol",
+        "POIOTRACO":"cholchol",
+        "AMUNATEGUI":"cholchol",
+        "SMITH":"cholchol",
+        "SMITT":"cholchol",
+        "SMIHT":"cholchol",
+        "CASTELLON":"cholchol",
+        "CASRELLON":"cholchol",
+        "CULL":"repocura",
+        "SCH":"cholchol"
+
+    }
+
+    # Función para asignar distrito
+    def asignar_distrito(texto):
+        texto = texto.upper()
+        for sector, distrito in sector_a_distrito.items():
+            if sector in texto:
+                # Si hay varios posibles distritos, toma el primero
+                if isinstance(distrito, list):
+                    return distrito[0]
+                return distrito
+        return "NO_ESPECIFICADO"
+
+    # Aplicar la función
+    df = df[df['COMUNA'] == 'CHOL CHOL']
+    df['DISTRITO'] = df['DIRECCION_NORM'].apply(asignar_distrito)
+
+    # Ver resultados
+    print(df[['DIRECCION_NORM', 'DISTRITO']].head(20))
+
+    # Crear la columna SECTOR con un valor por defecto
+    df['SECTOR'] = 'NO_ESPECIFICADO'
+    df['LAT_SEC'] = 'NO_ESPECIFICADO'
+    df['LON_SEC'] = 'NO_ESPECIFICADO'
+
+    # Asignar 'Luna' a distritos específicos
+    df.loc[df['DISTRITO'].isin(['carirriñe', 'repocura', 'rapahue']), 'SECTOR'] = 'Luna'
+
+    # Asignar 'Sol' a otros distritos
+    df.loc[df['DISTRITO'].isin(['cholchol', 'tranahuillin']), 'SECTOR'] = 'Sol'
+
+    # Asignar coordenadas
+    df.loc[df['DISTRITO'].isin(['repocura']), 'LAT_SEC'] = '-38.529326'
+    df.loc[df['DISTRITO'].isin(['repocura']), 'LON_SEC'] = '-72.957807'
+    df.loc[df['DISTRITO'].isin(['carirriñe']), 'LAT_SEC'] = '-38.601780'
+    df.loc[df['DISTRITO'].isin(['carirriñe']), 'LON_SEC'] = '-72.959978'
+    df.loc[df['DISTRITO'].isin(['rapahue']), 'LAT_SEC'] = '-38.679850'
+    df.loc[df['DISTRITO'].isin(['rapahue']), 'LON_SEC'] = '-72.847577'
+    df.loc[df['DISTRITO'].isin(['tranahuillin']), 'LAT_SEC'] = '-38.640449'
+    df.loc[df['DISTRITO'].isin(['tranahuillin']), 'LON_SEC'] = '-72.794477'
+    df.loc[df['DISTRITO'].isin(['cholchol']), 'LAT_SEC'] = '-38.563485'
+    df.loc[df['DISTRITO'].isin(['cholchol']), 'LON_SEC'] = '-72.838224'
+
+    df.drop(columns=['DIRECCION'], errors='ignore', inplace=True)
+
+    return df
 
 
 

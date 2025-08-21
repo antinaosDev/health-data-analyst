@@ -61,6 +61,7 @@ with col5:
 if st.session_state.lista_dfs:
 
     df_con = procesamiento_agenda(st.session_state.lista_dfs)
+    df_con = normaliza_direcc(df_con)
     df_con_clean = df_con.drop([
     "SITUACION CALLE", "ES DISCAPACITADA", "ES SENAME", "ES EMBARAZADA", "RUT PROFESIONAL",
     "ESPECIALIDAD", "SUBESPECIALIDAD", "ESTABLECIMIENTO", "HORA GENERADA", "ESTADO HORA", 

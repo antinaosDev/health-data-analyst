@@ -1,119 +1,203 @@
+from analisis_func import load_logo, normaliza_direcc
+from servidor_fb import ingresar_registro_bd, leer_registro
 import streamlit as st
 import pandas as pd
-import numpy as np
+from PIL import Image
 import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
-from datetime import datetime
-import io
-import time
-import gc
 
-from analisis_func import *
+st.title("🌍Consulta de Sector y Distrito")
 
-# Configuración de página
-st.set_page_config(layout="wide")
+st.info(
+    """
+    ℹ️ **Información importante**
 
-
-col1, col2, col3 = st.columns(3)
-
-# Botón Tabla agenda Médica
-with col1:
-    st.markdown("##### Tabla agenda médica 🖱️")
-    if "df_agenda" in st.session_state and st.session_state.df_agenda is not None:
-        st.info("Información disponible ✔️")
-    else:
-        st.warning("Primero debe cargar información en Análisis agenda Médica")
-
-# Botón Inscritos Percápita
-with col2:
-    st.markdown("##### Inscritos percápita 📊")
-    if "df_autorizados" in st.session_state and st.session_state.df_autorizados is not None:
-        st.info("Información disponible ✔️")
-    else:
-        st.warning("Primero debe cargar información en Análisis Percápita")
-
-# Botón Clasificación GES
-with col3:
-    st.markdown("##### Clasificación GES 🩺")
-    if "df_ges" in st.session_state and st.session_state.df_ges is not None:
-        st.info("Información disponible ✔️")
-    else:
-        st.warning("Primero debe cargar información en Preclasificador GES")
+    Los datos disponibles provienen de información **previamente trabajada**, por lo cual es posible que **no se encuentren todos los registros**.  
+    En caso de que un RUT consultado no tenga información de *Sector*, *Distrito* o *Nombre*, significa que no existe en la base consolidada actual.
+    """
+)
 
 
-lista_opciones = []
-if "df_agenda" in st.session_state and "df_autorizados" in st.session_state and "df_ges" in st.session_state:
-    lista_opciones.append((st.session_state.df_agenda,'Tabla agenda'))
-    lista_opciones.append((st.session_state.df_autorizados,'Tabla percápita'))
-    lista_opciones.append((st.session_state.df_ges,'Tabla ges'))
-elif "df_agenda" in st.session_state and "df_autorizados" in st.session_state:
-    lista_opciones.append((st.session_state.df_agenda,'Tabla agenda'))
-    lista_opciones.append((st.session_state.df_autorizados,'Tabla percápita'))
-elif "df_agenda" in st.session_state and "df_ges" in st.session_state:
-    lista_opciones.append((st.session_state.df_agenda,'Tabla agenda'))
-    lista_opciones.append((st.session_state.df_ges,'Tabla ges'))
-elif "df_autorizados" in st.session_state and "df_ges" in st.session_state:
-    lista_opciones.append((st.session_state.df_autorizados,'Tabla percápita'))
-    lista_opciones.append((st.session_state.df_ges,'Tabla ges'))
+# Leer datos desde la BD
+data = leer_registro('consulta')  # Esto devuelve un dict con IDs de Firebase
 
-lista_nombres = [i[1] for i in lista_opciones]
-
-
-if lista_nombres:
-    tablas_select = []
-    opciones_nom = st.multiselect('Seleccione una tabla',lista_nombres)
-    for i in lista_opciones:
-       if i[1] in opciones_nom:
-           tablas_select.append(i[0])
-    
-    if opciones_nom:
-        base = opciones_nom[0]
-        otras = opciones_nom[1:]
-
-        if otras:
-            texto_otras = " 🖇️ ".join(otras)
-            st.info(
-                f"📊 **Tabla base:** {base}\n\n"
-                f"Se combinará con: {texto_otras}"
-            )
-        else:
-            st.info(
-                f"📊 **Tabla base:** {base}\n\n"
-                "No hay otras tablas seleccionadas para combinar."
-            )
-        col1,col2,col3 = st.columns(3)
-        with col2:
-            btn_comb = st.button('🖇️Combinar Tablas',use_container_width=True)
-        if btn_comb:
-            if len(tablas_select) == 2:
-                #Evitamos que se copien columnas repetidas
-                cols1 = tablas_select[0].columns.tolist()
-                cols2 = [col for col in tablas_select[1].columns.tolist() if col not in cols1]
-                df_comb = tablas_select[0].merge(tablas_select[1][cols2 + ['RUT']],on = 'RUT',how ='left')
-                st.dataframe(df_comb.head(50))
-                st.write(df_comb.columns.tolist())
-                export_to_csv_gen(df_comb,'df_comb','2025')
-            elif len(tablas_select) > 2:
-                #Evitamos que se copien columnas repetidas
-                cols1 = tablas_select[0].columns.tolist()
-                cols2 = [col for col in tablas_select[1].columns.tolist() if col not in cols1]
-                df_comb = tablas_select[0].merge(tablas_select[1][cols2 + ['RUT']],on = 'RUT',how ='left')
-                #Evitamos columnas repetidas
-                cols3 = df_comb.columns.tolist()
-                cols4 = [col for col in tablas_select[2].columns.tolist() if col not in cols3]
-                df_comb_def = df_comb.merge(tablas_select[2][cols4 + ['RUT']],on = 'RUT',how ='left')
-                st.write(df_comb_def.columns.tolist())
-                st.dataframe(df_comb_def.head(50))
-
-
-           
-    else:
-        st.warning("⚠️ No se han seleccionado tablas para la unión.")
-
-
+# Convertir a DataFrame correctamente
+if isinstance(data, dict):
+    # Cada valor es un registro
+    df = pd.DataFrame(list(data.values()))
 else:
-    st.warning('Seleccione al menos dos tablas para combinar')
+    df = pd.DataFrame()
+
+if df.empty:
+    st.warning("No se encontraron datos en la base de datos.")
+else:
+
+    # Input para ingresar un RUT
+    # Extraer lista única de RUTs
+    if "RUT" in df.columns:
+        df = df[(df["DISTRITO"] != "NO_ESPECIFICADO") & (df["DISTRITO"] != "")]
+        ruts = df["RUT"].dropna().unique().tolist()
+    else:
+        ruts = []
+
+    # Input para elegir RUT
+    rut_ingresado = st.selectbox("Seleccione un RUT para consultar", ruts)
+
+    if rut_ingresado and "RUT" in df.columns:
+        registro = df[df["RUT"] == rut_ingresado]
+
+        if not registro.empty:
+            st.subheader(f"Información del RUT {rut_ingresado}")
+
+            # Extraer valores seguros
+            sector = registro["SECTOR"].values[0] if "SECTOR" in df.columns else "No disponible"
+            distrito = registro["DISTRITO"].values[0] if "DISTRITO" in df.columns else "No disponible"
+            lat = registro["LAT_SEC"].values[0] if "LAT_SEC" in df.columns else "No disponible"
+            lon = registro["LON_SEC"].values[0] if "LON_SEC" in df.columns else "No disponible"
+
+            col1, col2 = st.columns([5,4])
+
+            # Mostrar imagen según el sector
+            with col1:
+                if sector.upper() == "SOL":
+                    st.image(load_logo("sector sol.png"))
+                elif sector.upper() == "LUNA":
+                    st.image(load_logo("sector luna.png"))
+                
+
+            # Mostrar métricas
+            with col2:
+                st.metric("Distrito", distrito.upper())
+            
+                # Creamos el gráfico SOLO para el RUT encontrado
+                if lat != "No disponible" and lon != "No disponible":
+                    df_map = pd.DataFrame([{
+                        "LAT_SEC": lat,
+                        "LON_SEC": lon,
+                        "SECTOR": sector,
+                        "DISTRITO": distrito,
+                        "RUT": rut_ingresado
+                    }])
+
+                    # 🔹 Convertir a float (necesario para Plotly)
+                    df_map["LAT_SEC"] = pd.to_numeric(df_map["LAT_SEC"], errors="coerce")
+                    df_map["LON_SEC"] = pd.to_numeric(df_map["LON_SEC"], errors="coerce")
+
+                    fig = px.scatter_mapbox(
+                        df_map,
+                        lat="LAT_SEC",
+                        lon="LON_SEC",
+                        color="SECTOR",
+                        size_max=15,
+                        zoom=9,
+                        mapbox_style="open-street-map",
+                    )
+
+                    fig.update_layout(
+                        height=200,
+                        width=100,  # <--- controla el ancho en píxeles
+                        margin={"r":0,"t":0,"l":0,"b":0}
+                    )
+
+                    st.plotly_chart(fig)
+
+                else:
+                    st.warning("No hay coordenadas disponibles para este RUT")
 
 
 
+        else:
+            st.warning("No se encontró información para este RUT")
+    elif rut_ingresado and "RUT" not in df.columns:
+        st.error("No se encontró la columna 'RUT' en los datos")
+
+st.divider()
+
+st.subheader('Consulte el sector mediante la dirección del usuario')
+st.warning(
+    """
+    **⚠️** Si el RUT ingresado no se encuentra en la base de datos, por favor ingrese la dirección correspondiente
+    para poder determinar el posible **sector** al que pertenece.
+    """
+)
+
+import pandas as pd
+import streamlit as st
+import plotly.express as px
+
+# Función para simular load_logo
+def load_logo(filename):
+    return filename  # Reemplaza con tu código real para cargar imágenes
+
+# Input de dirección
+direccion = st.text_input("Por favor ingrese la dirección o sector")
+
+if direccion:  # Solo ejecuta si hay algo escrito
+    # Crear DataFrame temporal
+    df_temp = pd.DataFrame({
+        "DIRECCION": [direccion],
+        "COMUNA": ["CHOL CHOL"]  # Para pasar el filtro dentro de la función
+    })
+
+    # Normalizar direcciones
+    df_resultado = normaliza_direcc(df_temp)  # tu función existente
+
+    # Guardar en session_state para que persista y se actualice dinámicamente
+    st.session_state["df_resultado"] = df_resultado
+
+# Recuperar el DataFrame de session_state
+registro = st.session_state.get("df_resultado", pd.DataFrame())
+
+# Mostrar información si existe
+if not registro.empty:
+    st.subheader(f"Información de la dirección ingresada")
+
+    # Extraer valores seguros
+    sector = registro["SECTOR"].values[0] if "SECTOR" in registro.columns else "No disponible"
+    distrito = registro["DISTRITO"].values[0] if "DISTRITO" in registro.columns else "No disponible"
+    lat = registro["LAT_SEC"].values[0] if "LAT_SEC" in registro.columns else "No disponible"
+    lon = registro["LON_SEC"].values[0] if "LON_SEC" in registro.columns else "No disponible"
+
+    col1, col2 = st.columns([5,4])
+
+    # Mostrar imagen según el sector
+    with col1:
+        if sector.upper() == "SOL":
+            st.image(load_logo("sector sol.png"))
+        elif sector.upper() == "LUNA":
+            st.image(load_logo("sector luna.png"))
+
+    # Mostrar métricas y mapa
+    with col2:
+        st.metric("Distrito", distrito.upper())
+
+        if lat != "No disponible" and lon != "No disponible":
+            df_map = pd.DataFrame([{
+                "LAT_SEC": lat,
+                "LON_SEC": lon,
+                "SECTOR": sector,
+                "DISTRITO": distrito
+            }])
+
+            df_map["LAT_SEC"] = pd.to_numeric(df_map["LAT_SEC"], errors="coerce")
+            df_map["LON_SEC"] = pd.to_numeric(df_map["LON_SEC"], errors="coerce")
+
+            fig = px.scatter_mapbox(
+                df_map,
+                lat="LAT_SEC",
+                lon="LON_SEC",
+                color="SECTOR",
+                size_max=15,
+                zoom=9,
+                mapbox_style="open-street-map",
+            )
+
+            fig.update_layout(
+                height=200,
+                width=100,
+                margin={"r":0,"t":0,"l":0,"b":0}
+            )
+
+            # 🔹 Key único basado en dirección
+            st.plotly_chart(fig, key=f"map_{direccion}")

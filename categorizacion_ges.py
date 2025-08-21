@@ -96,7 +96,7 @@ if st.session_state.lista_dfs:
     df_con_clean = df_con_ges[['RUT','GENERO','ETNIA PERCEPCION','PROCEDENCIA','CLAS_ETARIA','ANIO_ASIG_HR','MES_ASIG_HR','POLICLINICO','AGRUPACION',"DIAGNOSTICO 1", "DIAGNOSTICO 2", "DIAGNOSTICO 3",'GES','CAT_GES']]
 
     #capturamos el dataframe en un sesion state
-    st.session_state.df_ges = df_con_clean
+    st.session_state.df_ges = df_con_clean[['RUT',"DIAGNOSTICO 1", "DIAGNOSTICO 2", "DIAGNOSTICO 3",'GES','CAT_GES']]
    
 
     tab1,tab2 = st.tabs(['Información del documento ℹ️','Análisis de datos 📈'])
