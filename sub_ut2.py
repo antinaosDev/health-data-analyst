@@ -41,8 +41,9 @@ else:
     else:
         ruts = []
 
+    ruts = ["Seleccione un RUT..."] + ruts
     # Input para elegir RUT
-    rut_ingresado = st.selectbox("Seleccione un RUT para consultar", ruts)
+    rut_ingresado = st.selectbox("", ruts, index=0)
 
     if rut_ingresado and "RUT" in df.columns:
         registro = df[df["RUT"] == rut_ingresado]
