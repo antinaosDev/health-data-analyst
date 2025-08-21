@@ -1,4 +1,3 @@
-from narwhals import col
 import streamlit as st
 import pandas as pd
 import chardet
@@ -768,7 +767,7 @@ def normaliza_direcc(df):
         "JUAN CALVU":"tranahuillin",
         "GABRIEL CHICA":"tranahuillin",
         "FRANCISCO CURI":"tranahuillin",
-        "JOSE CHAN":"tranahuillin,"
+        "JOSE CHAN":"tranahuillin",
         "MATEO YAU":"tranahuillin",
         "MATEO LLAU":"tranahuillin",
         "DOMINGO CHAÑ":"tranahuillin",
@@ -987,3 +986,5 @@ def footer():
                     🌐 Más información en: <a href="https://alain-antinao-s.notion.site/Alain-C-sar-Antinao-Sep-lveda-1d20a081d9a980ca9d43e283a278053e" target="_blank" style="color: #4A90E2;">Mi página personal</a>
                 </div>
             """, unsafe_allow_html=True)
+
+

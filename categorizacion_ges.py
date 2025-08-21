@@ -1,5 +1,4 @@
-from email import errors
-from altair import Axis
+from servidor_fb import ingresar_registro_bd
 import streamlit as st
 import pandas as pd
 import chardet
@@ -14,7 +13,6 @@ import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
 import polars as pl
-
 
 #config pagina
 st.set_page_config(layout="wide")
