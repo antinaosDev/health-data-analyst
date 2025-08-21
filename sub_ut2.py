@@ -13,8 +13,8 @@ st.info(
     """
     ℹ️ **Información importante**
 
-    Los datos disponibles provienen de información **previamente trabajada**, por lo cual es posible que **no se encuentren todos los registros**.  
-    En caso de que un RUT consultado no tenga información de *Sector*, *Distrito* o *Nombre*, significa que no existe en la base consolidada actual.
+    Los datos disponibles provienen de información **previamente procesada**, por lo cual es posible que **no se encuentren todos los registros**.  
+    En caso de que un RUT consultado no tenga información de *Sector* o *Distrito*, significa que no existe en la base consolidada actual.
     """
 )
 

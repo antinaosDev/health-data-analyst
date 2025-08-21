@@ -96,7 +96,7 @@ if lista_nombres:
                     cols1 = tablas_select[0].columns.tolist() 
                     cols2 = [col for col in tablas_select[1].columns.tolist() 
                              if col not in cols1] 
-                    df_comb = pd.merge(tablas_select[0][cols1],tablas_select[1][cols2 + ['RUT']],on = 'RUT',how='inner')
+                    df_comb = pd.merge(tablas_select[0][cols1],tablas_select[1][cols2 + ['RUT']],on = 'RUT',how='left')
                     df_comb['NOMBRE_CENTRO'] = df_comb['NOMBRE_CENTRO'].fillna('Sin registro Percápita') 
                     df_comb.drop_duplicates(inplace=True)
                     export_to_csv_gen(df_comb,'df_comb','2025') 
@@ -105,12 +105,12 @@ if lista_nombres:
                 elif len(tablas_select) > 2: #Evitamos que se copien columnas repetidas 
                     cols1 = tablas_select[0].columns.tolist() 
                     cols2 = [col for col in tablas_select[1].columns.tolist() if col not in cols1]
-                    df_comb = pd.merge(tablas_select[0][cols1],tablas_select[1][cols2 + ['RUT']],on = 'RUT',how='inner')
+                    df_comb = pd.merge(tablas_select[0][cols1],tablas_select[1][cols2 + ['RUT']],on = 'RUT',how='left')
                     df_comb.drop_duplicates(inplace=True) 
                     #Evitamos columnas repetidas 
                     cols3 = df_comb.columns.tolist() 
                     cols4 = [col for col in tablas_select[2].columns.tolist() if col not in cols3]
-                    df_comb_def = pd.merge(df_comb[cols3],tablas_select[2][cols4 + ['RUT']],on = 'RUT',how='inner') 
+                    df_comb_def = pd.merge(df_comb[cols3],tablas_select[2][cols4 + ['RUT']],on = 'RUT',how='left') 
                     df_comb_def['NOMBRE_CENTRO'] = df_comb_def['NOMBRE_CENTRO'].fillna('Sin registro Percápita') 
                     df_comb_def.drop_duplicates(inplace=True)
                     export_to_csv_gen(df_comb_def,'df_comb','2025') 
