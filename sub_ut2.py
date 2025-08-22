@@ -6,44 +6,84 @@ from PIL import Image
 import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
+import streamlit.components.v1 as components
 
 st.title("🌍Consulta de Sector y Distrito")
 
-import streamlit as st
-
 # Crear dos columnas con proporciones: 1:2 (logo : info)
-columna1, columna2 = st.columns([1,2])
+columna1, columna2 = st.columns(2)
 
 with columna1:
-    # Centrar el logo
-    st.image(load_logo("cartografia.png"))
+    st.subheader("👩‍⚕️ Enfermería")
 
-with columna2:
-    st.subheader('Profesionales sectorizados')
-
-    # Crear "tarjetas" visuales para cada profesional
-    st.markdown(
+    components.html(
         """
-        <div style="display: flex; flex-direction: column; gap: 15px;">
-            <div style="background-color:#f0f2f6; padding:10px; border-radius:10px;">
-                <h4 style="margin:0; color:#2E86C1;">Enfermería</h4>
-            </div>
-            <div style="background-color:#f0f2f6; padding:10px; border-radius:10px;">
-                <h4 style="margin:0; color:#28B463;">Matronería</h4>
-            </div>
+        <div style="background-color:#f0f2f6; padding:15px; border-radius:10px;">
+            <h4 style="margin:0; color:#2E86C1;">👩‍⚕️ Enfermería</h4>
+            <ul style="margin-top:8px;">
+                <li><b>Sector Sol (2 Distritos):</b> 3 Enfermeros/as</li>
+                <li><b>Sector Luna (3 Distritos):</b> 2 Enfermeros/as</li>
+            </ul>
+            <h5 style="color:#2E86C1; margin-top:12px;">Prestaciones Sectorizadas:</h5>
+            <ul>
+                <li>Control de Salud Infantil: Seguimiento integral del desarrollo.</li>
+                <li>Control de Salud Cardiovascular: Manejo y prevención de patologías.</li>
+            </ul>
+            <h5 style="color:#2E86C1; margin-top:12px;">Prestaciones Transversales:</h5>
+            <ul>
+                <li>EMPAM (Examen Médico Preventivo del Adulto Mayor)</li>
+                <li>Curaciones</li>
+                <li>Vacunatorio</li>
+                <li>Procedimientos varios (inyecciones, toma de muestras, etc.)</li>
+            </ul>
         </div>
-        """, unsafe_allow_html=True
+        """,
+        height=400,
+        scrolling=True
     )
 
+with columna2:
+    st.subheader("🤰 Matronería")
 
-st.info(
-    """
-    ℹ️ **Información importante**
+    components.html(
+        """
+        <div style="background-color:#f0f2f6; padding:15px; border-radius:10px;">
+            <h4 style="margin:0; color:#28B463;">🤰 Matronería</h4>
+            <ul style="margin-top:8px;">
+                <li><b>Sector Sol (2 Distritos):</b> 3 Matrones/as</li>
+                <li><b>Sector Luna (3 Distritos):</b> 3 Matrones/as</li>
+            </ul>
+            <h5 style="color:#28B463; margin-top:12px;">Prestaciones Sectorizadas:</h5>
+            <ul>
+                <li>Consulta y Control de Matronería: Seguimiento periódico.</li>
+                <li>Control de Embarazo e Ingreso: Acompañamiento desde el inicio.</li>
+                <li>Control de Diada: Cuidado de la madre y el recién nacido.</li>
+            </ul>
+            <h5 style="color:#28B463; margin-top:12px;">Prestaciones Transversales:</h5>
+            <ul>
+                <li>Toma de PAP (Papanicolau)</li>
+                <li>Ecografías</li>
+                <li>Atención en sala de parto y urgencias gineco-obstétricas</li>
+            </ul>
+        </div>
+        """,
+        height=400,
+        scrolling=True
+    )
 
-    Los datos disponibles provienen de información **previamente procesada**, por lo cual es posible que **no se encuentren todos los registros**.  
-    En caso de que un RUT consultado no tenga información de *Sector* o *Distrito*, significa que no existe en la base consolidada actual.
-    """
-)
+# Centrar el logo
+tm1,tm2 = st.columns([3,4])
+with tm1:
+    st.image(load_logo("cartografia.png"))
+with tm2:
+    st.info(
+        """
+        ℹ️ **Información importante**
+
+        Los datos disponibles provienen de información **previamente procesada**, por lo cual es posible que **no se encuentren todos los registros**.  
+        En caso de que un RUT consultado no tenga información de *Sector* o *Distrito*, significa que no existe en la base consolidada actual.
+        """
+    )
 
 
 # Leer datos desde la BD
