@@ -63,7 +63,7 @@ with columna2:
             <ul>
                 <li>Toma de PAP (Papanicolau)</li>
                 <li>Ecografías</li>
-                <li>Atención en sala de parto y urgencias gineco-obstétricas</li>
+                <li>Atención y urgencias gineco-obstétricas</li>
             </ul>
         </div>
         """,
