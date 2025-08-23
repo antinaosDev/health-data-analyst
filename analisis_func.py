@@ -560,6 +560,8 @@ def normaliza_direcc(df):
 
     # Diccionario de sectores a distritos
     sector_a_distrito = {
+        "MALALCHE ALTO": "repocura",
+        "ALTO":"repocura",
         "CHOLCHOL": "cholchol",
         "CULLINCO": "repocura",
         "RAPAHUE": "rapahue",
@@ -573,7 +575,6 @@ def normaliza_direcc(df):
         "ROMULHUE": "carirriñe",
         "COIHUE CURACO": "cholchol",
         "LLANQUINAO": "tranahuillin",
-        "COIHUE CURACO": "cholchol",
         "COILACO": "cholchol",
         "HUAMAQUI":  "repocura",  # Puede aparecer en distintos distritos
         "COIHUE":"cholchol",
@@ -634,7 +635,6 @@ def normaliza_direcc(df):
         "CIOHUE":"cholchol",
         "PICUTA":"rapahue",
         "HUAMPOMALLIN":"cholchol",
-        "HUECHUCON":"carirriñe",
         "HUECH":"carirriñe",
         "GUECHUCON":"carirriñe",
         "GUECH":"carirriñe",
@@ -695,7 +695,6 @@ def normaliza_direcc(df):
         "JUAN CURIGL":"repocura",
         "JUAN CURIH":"repocura",
         "JOSE CURIQ":"repocura",
-        "ANTONIO CAYUL":"repocura",
         "LORENZO CAYUL":"repocura",
         "LORENSO CAYUL":"repocura",
         "HUEICHAO":"repocura",
@@ -721,7 +720,6 @@ def normaliza_direcc(df):
         "RAMON PAINE":"carirriñe",
         "TRENG":"rapahue",
         "MULATO CHIG":"rapahue",
-        "RAMON PAINE":"rapahue",
         "PEDRO CAY":"rapahue",
         "RAYEN LAF":"rapahue",
         "FRANCISCO MAL":"rapahue",
@@ -744,7 +742,6 @@ def normaliza_direcc(df):
         "JUAN MILLA":"cholchol",
         "BENANCIO COÑO":"cholchol",
         "BENANCIO CONOE":"cholchol",
-        "LOS CARRIZOS":"cholchol",
         "LOS CARRISOS":"cholchol",
         "CARRIZOS":"cholchol",
         "CARRRISOS":"cholchol",
@@ -772,7 +769,6 @@ def normaliza_direcc(df):
         "MATEO LLAU":"tranahuillin",
         "DOMINGO CHAÑ":"tranahuillin",
         "DOMINGO CHAN":"tranahuillin",
-        "FRANCISCO CURI":"tranahuillin",
         "CALFUL":"tranahuillin",
         "RAMON ANTIL":"tranahuillin",
         "ANTONIO TROP":"tranahuillin",
@@ -907,9 +903,7 @@ def normaliza_direcc(df):
         "CASTELLON":"cholchol",
         "CASRELLON":"cholchol",
         "CULL":"repocura",
-        "SCH":"cholchol",
-        "MALALCHE ALTO": "repocura",
-        "ALTO":"repocura"
+        "SCH":"cholchol"
     }
 
     # Función para asignar distrito
