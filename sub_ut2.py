@@ -8,18 +8,18 @@ import plotly.figure_factory as ff
 import plotly.graph_objects as go
 import streamlit.components.v1 as components
 
-st.title("🌍Consulta de Sector y Distrito")
+
+st.title("🌍Búsqueda de Sector y Distrito")
 
 # Crear dos columnas con proporciones: 1:2 (logo : info)
-columna1, columna2 = st.columns(2)
+columna1, columna2,columna3 = st.columns(3)
 
-with columna1:
-    st.subheader("👩‍⚕️ Enfermería")
+with columna2:
+    st.subheader("Enfermería")
 
     components.html(
         """
         <div style="background-color:#f0f2f6; padding:15px; border-radius:10px;">
-            <h4 style="margin:0; color:#2E86C1;">👩‍⚕️ Enfermería</h4>
             <ul style="margin-top:8px;">
                 <li><b>Sector Sol (2 Distritos):</b> 3 Enfermeros/as</li>
                 <li><b>Sector Luna (3 Distritos):</b> 2 Enfermeros/as</li>
@@ -38,17 +38,16 @@ with columna1:
             </ul>
         </div>
         """,
-        height=400,
-        scrolling=True
+        height=420,
+        scrolling=False
     )
 
-with columna2:
-    st.subheader("🤰 Matronería")
+with columna3:
+    st.subheader("Matronería")
 
     components.html(
         """
         <div style="background-color:#f0f2f6; padding:15px; border-radius:10px;">
-            <h4 style="margin:0; color:#28B463;">🤰 Matronería</h4>
             <ul style="margin-top:8px;">
                 <li><b>Sector Sol (2 Distritos):</b> 3 Matrones/as</li>
                 <li><b>Sector Luna (3 Distritos):</b> 3 Matrones/as</li>
@@ -67,22 +66,27 @@ with columna2:
             </ul>
         </div>
         """,
-        height=400,
-        scrolling=True
+        height=420,
+        scrolling=False
     )
-
-# Centrar el logo
-tm1,tm2 = st.columns([3,4])
-with tm1:
+with columna1:
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
     st.image(load_logo("cartografia.png"))
-with tm2:
-    st.info(
-        """
-        ℹ️ **Información importante**
 
-        Los datos disponibles provienen de información **previamente procesada**, por lo cual es posible que **no se encuentren todos los registros**.  
-        En caso de que un RUT consultado no tenga información de *Sector* o *Distrito*, significa que no existe en la base consolidada actual.
-        """
+st.divider()
+
+st.subheader('🪪Búsqueda de Sector por Rut del usuario')
+st.info(
+     """
+    ℹ️ **Información importante**
+
+    Los datos disponibles provienen de información **previamente procesada**, por lo cual es posible que **no se encuentren todos los registros**.  
+    En caso de que un RUT consultado no tenga información de *Sector* o *Distrito*, significa que no existe en la base consolidada actual.
+    """
     )
 
 
@@ -182,7 +186,7 @@ else:
 
 st.divider()
 
-st.subheader('Consulte el sector mediante la dirección del usuario')
+st.subheader('🌍Búsqueda de Sector mediante la Dirección del usuario')
 st.warning(
     """
     **⚠️** Si el RUT ingresado no se encuentra en la base de datos, por favor ingrese la dirección correspondiente
@@ -190,9 +194,7 @@ st.warning(
     """
 )
 
-import pandas as pd
-import streamlit as st
-import plotly.express as px
+
 
 # Función para simular load_logo
 def load_logo(filename):
