@@ -184,11 +184,11 @@ def normaliza_direcc(df):
     df['LON_SEC'] = 'NO_ESPECIFICADO'
 
     
-    df.to_csv('fg.csv',index=False)
+    df.to_csv('fg2.csv',index=False)
     return df
 
 df = pd.read_csv(
-    r"D:\DESARROLLO PROGRAMACION\analisis tendencia\reporte_completo_01082025_112608.csv",
+    r"D:\DESARROLLO PROGRAMACION\analisis tendencia\comb\Agenda_médica_[2015, 2016, 2017, 2018, 2019, 2020, 2022, 2023, 2024, 2025].csv",
     sep=';',
     on_bad_lines='skip',
     encoding='latin1'   # <-- o cp1252 si latin1 falla
