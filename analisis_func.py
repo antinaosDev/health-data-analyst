@@ -125,7 +125,7 @@ def procesamiento_agenda(lista_dfs):
         "ESTABLECIMIENTO", "HORA GENERADA", "ESTADO HORA", "ESTADO ATENCION", "ACCION A TOMAR", 
         "FECHA ASIGNADA", "HORA ASIGNADA", "FECHA EJECUTADA", "HORA EJECUTADA", "FECHA ULT MOD", "HORA UTL MOD",
         "TIPO_DIAGNOSTICO 1","TIPO DIAGNOSTICO 2","TIPO DIAGNOSTICO 3",
-        "DIAGNOSTICO 1","DIAGNOSTICO 2","DIAGNOSTICO 3"
+        "DIAGNOSTICO 1","DIAGNOSTICO 2","DIAGNOSTICO 3","ESTADO 1","ESTADO 2","ESTADO 3",
     ]
 
     df_concat = df_concat[cols_work]
@@ -355,6 +355,44 @@ def procesamiento_agenda(lista_dfs):
 
 
     df_concat['GES'] = df_concat.apply(es_ges, axis=1)
+
+
+    def es_conf(fila):
+        # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
+        return 'SI' if any(str(f).strip().upper() == 'CONFIRMACION GES' for f in [
+            fila['ESTADO 1'], 
+            fila['ESTADO 2'], 
+            fila['ESTADO 3']
+        ]) else 'NO'
+
+
+    df_concat['CONF_GES'] = df_concat.apply(es_conf, axis=1)
+
+  
+
+    def es_sosp(fila):
+        # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
+        return 'SI' if any(str(f).strip().upper() == 'SOSPECHA GES' for f in [
+            fila['ESTADO 1'], 
+            fila['ESTADO 2'], 
+            fila['ESTADO 3']
+        ]) else 'NO'
+
+
+    df_concat['SOSP_GES'] = df_concat.apply(es_sosp, axis=1)
+
+  
+
+    def es_trat(fila):
+        # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
+        return 'SI' if any(str(f).strip().upper() == 'TRATAMIENTO GES' for f in [
+            fila['ESTADO 1'], 
+            fila['ESTADO 2'], 
+            fila['ESTADO 3']
+        ]) else 'NO'
+
+
+    df_concat['TRAT_GES'] = df_concat.apply(es_trat, axis=1)
 
     return df_concat
 

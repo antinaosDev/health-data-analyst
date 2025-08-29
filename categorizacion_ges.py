@@ -73,6 +73,7 @@ with col5:
 if st.session_state.lista_dfs:
 
     df_con = procesamiento_agenda(st.session_state.lista_dfs)
+    df_con = normaliza_direcc(df_con)
 
     @st.cache_data(ttl=600)
     def conversion_pandas_polars(df):
@@ -91,7 +92,9 @@ if st.session_state.lista_dfs:
     
     df_prev_ges =  conversion_polars_pandas(df_con_ges)
     df_con_ges = df_prev_ges
-    df_con_clean = df_con_ges[['RUT','GENERO','ETNIA PERCEPCION','PROCEDENCIA','CLAS_ETARIA','ANIO_ASIG_HR','MES_ASIG_HR','POLICLINICO','AGRUPACION',"DIAGNOSTICO 1", "DIAGNOSTICO 2", "DIAGNOSTICO 3",'GES','CAT_GES']]
+    df_con_clean = df_con_ges[['RUT','GENERO','ACCION A TOMAR','COMUNA','ETNIA PERCEPCION','PROCEDENCIA','FECHA ASIGNADA','ESCOLARIDAD','RANGO_SALARIAL','ESTADO ATENCION','FECHA EJECUTADA','CLAS_ETARIA','ANIO_ASIG_HR',
+                               'MES_ASIG_HR','POLICLINICO','AGRUPACION',"DIAGNOSTICO 1", "DIAGNOSTICO 2",
+                                 "DIAGNOSTICO 3",'GES','CAT_GES','SECTOR','COMUNIDAD','RANGO_ETARIO']]
 
     #capturamos el dataframe en un sesion state
     st.session_state.df_ges = df_con_clean[['RUT',"DIAGNOSTICO 1", "DIAGNOSTICO 2", "DIAGNOSTICO 3",'GES','CAT_GES']]
@@ -122,20 +125,20 @@ if st.session_state.lista_dfs:
     with tab2:
         st.subheader("Análisis estadístico de su archivo 📊")
         #Años ordenados cronológicamente
-        años = df_con_ges['ANIO_ASIG_HR'].dropna().unique().tolist()
+        años = df_con_clean['ANIO_ASIG_HR'].dropna().unique().tolist()
         años = sorted(años)
         # Meses ordenados cronológicamente
         orden_meses = [
             "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
             "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
         ]
-        meses = df_con_ges['MES_ASIG_HR'].dropna().unique().tolist()
+        meses = df_con_clean['MES_ASIG_HR'].dropna().unique().tolist()
         meses = sorted([m for m in meses if m in orden_meses], key=lambda x: orden_meses.index(x))
         #Obtención de categoria genero
-        gen_ops = df_con_ges['GENERO'].dropna().unique().tolist()
+        gen_ops = df_con_clean['GENERO'].dropna().unique().tolist()
         gen_ops.append('TODOS')
         #Obtención de categoria clase etaria
-        et_ops = df_con_ges['CLAS_ETARIA'].dropna().unique().tolist()
+        et_ops = df_con_clean['CLAS_ETARIA'].dropna().unique().tolist()
         et_ops.append('TODOS')
         et_ops.remove('SIN DATOS')
 
@@ -168,22 +171,37 @@ if st.session_state.lista_dfs:
         
         mult1,mult2 = st.columns(2)
         with mult1:
-            mult_select = st.multiselect('Seleccione un policlínico', df_con_ges['POLICLINICO'].unique().tolist(),key='poli')
+            mult_select = st.multiselect('Seleccione un policlínico', df_con_clean['POLICLINICO'].unique().tolist(),key='poli')
         with mult2:
-            mult_estam = st.multiselect('Seleccione el estamento',df_con_ges['AGRUPACION'].unique().tolist(),key='agrup')
+            mult_estam = st.multiselect('Seleccione el estamento',df_con_clean['AGRUPACION'].unique().tolist(),key='agrup')
 
         #Selectcciones de sector,estado,etnia
         et,sect = st.columns(2)
         with et:
-            df_con_ops = df_con_ges['ETNIA PERCEPCION'].unique().tolist()
+            df_con_ops = df_con_clean['ETNIA PERCEPCION'].unique().tolist()
             df_con_ops.append('TODOS')
             df_con_ops.remove('SIN DATOS')
+
+            df_con_est = df_con_clean['ACCION A TOMAR'].unique().tolist()
+            df_con_est.append('TODOS')
+            df_con_est.remove('SIN DATOS')
+            sel_est = st.selectbox('Seleccione estado',df_con_est,key='sel_est',index=len(df_con_est)-1)
+
             sel_et = st.selectbox('Seleccione la etnia',df_con_ops,key='sel_et',index=len(df_con_ops)-1)
         with sect:
-            df_con_sect = df_con_ges['PROCEDENCIA'].unique().tolist()
+            df_con_sect = df_con_clean['SECTOR'].unique().tolist()
+            df_con_sect.remove('NO_ESPECIFICADO')
             df_con_sect.append('TODOS')
             sel_sec = st.selectbox('Seleccione sector',df_con_sect,key='sel_sect',index=len(df_con_sect)-1)
+
+            df_con_com = df_con_clean['COMUNIDAD'].unique().tolist()
+            df_con_com.remove('NO_ESPECIFICADO')
+            df_con_com.append('TODOS')
+            sel_com = st.selectbox('Seleccione comunidad',df_con_com,key='sel_com',index=len(df_con_com)-1)
        
+
+
+
         st.divider()
         # Meses filtrados
         idx_inicio = orden_meses.index(ops_month[0])
@@ -192,41 +210,47 @@ if st.session_state.lista_dfs:
 
         # Base de condición
         cond_base = (
-            (df_con_ges['ANIO_ASIG_HR'] >= ops_year[0]) &
-            (df_con_ges['ANIO_ASIG_HR'] <= ops_year[1]) &
-            (df_con_ges['MES_ASIG_HR'].isin(meses_filtrados))
+            (df_con_clean['ANIO_ASIG_HR'] >= ops_year[0]) &
+            (df_con_clean['ANIO_ASIG_HR'] <= ops_year[1]) &
+            (df_con_clean['MES_ASIG_HR'].isin(meses_filtrados))
         )
 
         # Agregar condición por policlínico si hay selección
         if mult_select:
-            cond_base = cond_base & (df_con_ges['POLICLINICO'].isin(mult_select))
+            cond_base = cond_base & (df_con_clean['POLICLINICO'].isin(mult_select))
 
         # Agregar condición por estamento si hay selección
         if mult_estam:
-            cond_base = cond_base & (df_con_ges['AGRUPACION'].isin(mult_estam))
+            cond_base = cond_base & (df_con_clean['AGRUPACION'].isin(mult_estam))
 
         # Agregar condición para etnia si no es "TODOS"
         if sel_et != 'TODOS':
-            cond_base = cond_base & (df_con_ges['ETNIA PERCEPCION'] == sel_et)
+            cond_base = cond_base & (df_con_clean['ETNIA PERCEPCION'] == sel_et)
 
         # Agregar condición para sector si no es "TODOS"
         if sel_sec != 'TODOS':
-            cond_base = cond_base & (df_con_ges['PROCEDENCIA'] == sel_sec)
+            cond_base = cond_base & (df_con_clean['PROCEDENCIA'] == sel_sec)
+        
+        # Agregar condición para comiunidad si no es "TODOS"
+        if sel_com != 'TODOS':
+            cond_base = cond_base & (df_con_clean['COMUNIDAD'] == sel_com)
 
-
+        # Agregar condición para estado si no es "TODOS"
+        if sel_est != 'TODOS':
+            cond_base = cond_base & (df_con_clean['ACCION A TOMAR'] == sel_est)
 
         # Filtros combinados para género y clase etaria (igual que antes)
         if ops_gen == 'TODOS' and ops_et != 'TODOS':
-            cond_final = cond_base & (df_con_ges['CLAS_ETARIA'] == ops_et)
+            cond_final = cond_base & (df_con_clean['CLAS_ETARIA'] == ops_et)
         elif ops_gen != 'TODOS' and ops_et == 'TODOS':
-            cond_final = cond_base & (df_con_ges['GENERO'] == ops_gen)
+            cond_final = cond_base & (df_con_clean['GENERO'] == ops_gen)
         elif ops_gen == 'TODOS' and ops_et == 'TODOS':
             cond_final = cond_base
         else:
-            cond_final = cond_base & (df_con_ges['GENERO'] == ops_gen) & (df_con_ges['CLAS_ETARIA'] == ops_et)
+            cond_final = cond_base & (df_con_clean['GENERO'] == ops_gen) & (df_con_clean['CLAS_ETARIA'] == ops_et)
 
         # Aplicar filtro final
-        df_filtered = df_con_ges[cond_final]
+        df_filtered = df_con_clean[cond_final]
         df_filtered = df_filtered[df_filtered['GES'] == 'SI']
 
         

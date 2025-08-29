@@ -149,21 +149,31 @@ if st.session_state.lista_dfs:
             mult_estam = st.multiselect('Seleccione el estamento',df_con['AGRUPACION'].unique().tolist(),key='agrup')
 
         #Selectcciones de sector,estado,etnia
-        et,sect,est = st.columns(3)
+        et,sect = st.columns(2)
         with et:
             df_con_ops = df_con['ETNIA PERCEPCION'].unique().tolist()
             df_con_ops.append('TODOS')
             df_con_ops.remove('SIN DATOS')
-            sel_et = st.selectbox('Seleccione la etnia',df_con_ops,key='sel_et',index=len(df_con_ops)-1)
-        with sect:
-            df_con_sect = df_con['PROCEDENCIA'].unique().tolist()
-            df_con_sect.append('TODOS')
-            sel_sec = st.selectbox('Seleccione sector',df_con_sect,key='sel_sect',index=len(df_con_sect)-1)
-        with est:
+
             df_con_est = df_con['ACCION A TOMAR'].unique().tolist()
             df_con_est.append('TODOS')
             df_con_est.remove('SIN DATOS')
             sel_est = st.selectbox('Seleccione estado',df_con_est,key='sel_est',index=len(df_con_est)-1)
+
+            sel_et = st.selectbox('Seleccione la etnia',df_con_ops,key='sel_et',index=len(df_con_ops)-1)
+        with sect:
+            df_con_sect = df_con['SECTOR'].unique().tolist()
+            df_con_sect.remove('NO_ESPECIFICADO')
+            df_con_sect.append('TODOS')
+            sel_sec = st.selectbox('Seleccione sector',df_con_sect,key='sel_sect',index=len(df_con_sect)-1)
+
+            df_con_com = df_con['COMUNIDAD'].unique().tolist()
+            df_con_com.remove('NO_ESPECIFICADO')
+            df_con_com.append('TODOS')
+            sel_com = st.selectbox('Seleccione comunidad',df_con_com,key='sel_com',index=len(df_con_com)-1)
+       
+
+
 
         st.divider()
         # Meses filtrados
@@ -193,6 +203,10 @@ if st.session_state.lista_dfs:
         # Agregar condición para sector si no es "TODOS"
         if sel_sec != 'TODOS':
             cond_base = cond_base & (df_con['PROCEDENCIA'] == sel_sec)
+        
+        # Agregar condición para comiunidad si no es "TODOS"
+        if sel_com != 'TODOS':
+            cond_base = cond_base & (df_con['COMUNIDAD'] == sel_com)
 
         # Agregar condición para estado si no es "TODOS"
         if sel_est != 'TODOS':
