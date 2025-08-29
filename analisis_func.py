@@ -354,7 +354,7 @@ def procesamiento_agenda(lista_dfs):
         ]) else 'NO'
 
 
-    df_concat['GES'] = df_concat.apply(es_ges, axis=1)
+    df_concat['ES_GES'] = df_concat.apply(es_ges, axis=1)
 
 
     def es_conf(fila):

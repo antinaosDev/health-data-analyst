@@ -94,10 +94,10 @@ if st.session_state.lista_dfs:
     df_con_ges = df_prev_ges
     df_con_clean = df_con_ges[['RUT','GENERO','ACCION A TOMAR','COMUNA','ETNIA PERCEPCION','PROCEDENCIA','FECHA ASIGNADA','ESCOLARIDAD','RANGO_SALARIAL','ESTADO ATENCION','FECHA EJECUTADA','CLAS_ETARIA','ANIO_ASIG_HR',
                                'MES_ASIG_HR','POLICLINICO','AGRUPACION',"DIAGNOSTICO 1", "DIAGNOSTICO 2",
-                                 "DIAGNOSTICO 3",'GES','CAT_GES','SECTOR','COMUNIDAD','RANGO_ETARIO']]
+                                 "DIAGNOSTICO 3",'ES_GES','CAT_GES','CONF_GES','SOSP_GES','TRAT_GES','SECTOR','COMUNIDAD','RANGO_ETARIO']]
 
     #capturamos el dataframe en un sesion state
-    st.session_state.df_ges = df_con_clean[['RUT',"DIAGNOSTICO 1", "DIAGNOSTICO 2", "DIAGNOSTICO 3",'GES','CAT_GES']]
+    st.session_state.df_ges = df_con_clean[['RUT',"DIAGNOSTICO 1", "DIAGNOSTICO 2", "DIAGNOSTICO 3",'ES_GES','CAT_GES','CONF_GES','SOSP_GES','TRAT_GES']]
    
 
     tab1,tab2 = st.tabs(['Información del documento ℹ️','Análisis de datos 📈'])
@@ -251,7 +251,7 @@ if st.session_state.lista_dfs:
 
         # Aplicar filtro final
         df_filtered = df_con_clean[cond_final]
-        df_filtered = df_filtered[df_filtered['GES'] == 'SI']
+        df_filtered = df_filtered[df_filtered['ES_GES'] == 'SI']
 
         
 
