@@ -131,10 +131,9 @@ diccionario = {
     "Desprendimiento de Retina":{"PK": [
         "desprendimiento de retina", "desprendimiento retinal", "problema retinal", "separación de retina"
     ],"emin":0,"emax":150},
-    "Hemofilia":{"PK": [
-        "hemofilia", "trastorno hemorrágico", "enfermedad de la coagulación", "deficiencia de factores de coagulación", 
-        "hemorragia"
-    ],"emin":0,"emax":150},
+    "Hemofilia":{"PK": ["hemofilia", "trastorno hemorrágico", "enfermedad de la coagulación", "deficiencia de factores de coagulación", "hemorragia"
+                        ]
+    ,"emin":0,"emax":150},
     "Depresion": {"PK":[
         "depresión", "trastorno depresivo", "estado depresivo", "enfermedad depresiva", "depresión clínica"
     ],"emin":16,"emax":150},
