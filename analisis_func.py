@@ -236,7 +236,7 @@ def procesamiento_agenda(lista_dfs):
 
     #----------------Calcular edad---------------------------------------
     # Asegura que la columna esté en formato datetime
-    df_concat["FECHA NACIMIENTO"] = pd.to_datetime(df_concat["FECHA NACIMIENTO"], errors='coerce')
+    df_concat["FECHA NACIMIENTO"] = pd.to_datetime(df_concat["FECHA NACIMIENTO"], errors='coerce',dayfirst=True)
 
     # Fecha actual
     hoy = pd.Timestamp.today()
@@ -316,7 +316,7 @@ def procesamiento_agenda(lista_dfs):
     df_concat["RANGO_SALARIAL"] = np.select(condiciones_3, valores_3, default="SIN DATOS")
 
     #---------------------SE CREA COLUMNA DE MES Y AÑO PARA IDENTIFICAR CADA PLANILLA-----------------------------------
-    df_concat["FECHA ASIGNADA"] = pd.to_datetime(df_concat["FECHA ASIGNADA"],errors='coerce')
+    df_concat["FECHA ASIGNADA"] = pd.to_datetime(df_concat["FECHA ASIGNADA"],errors='coerce',dayfirst=True)
 
     #creacion columna dia
     df_concat['DIA_ASIG_HR'] = df_concat["FECHA ASIGNADA"].dt.day.astype('Int64')
@@ -341,7 +341,7 @@ def procesamiento_agenda(lista_dfs):
     
 
     #-----------------CREA COLUMNA DE MES Y AÑO PARA DETERMINAR LA EJECUCION DE LA HORA-------------------------------
-    df_concat["FECHA EJECUTADA"] = pd.to_datetime(df_concat["FECHA EJECUTADA"],errors='coerce')
+    df_concat["FECHA EJECUTADA"] = pd.to_datetime(df_concat["FECHA EJECUTADA"],errors='coerce',dayfirst=True)
 
     #creacion columna mes
     df_concat['DIA_EJEC_HR'] = df_concat["FECHA EJECUTADA"].dt.day.astype('Int64')
