@@ -376,7 +376,7 @@ def procesamiento_agenda(lista_dfs):
     # GES: búsqueda parcial
     def es_ges(fila):
         # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        return 'SI' if any(str(f).strip().upper() == 'ES_GES' for f in [
+        return 'SI' if any(str(f).strip().upper() == 'GES' for f in [
             fila['TIPO_DIAGNOSTICO 1'], 
             fila['TIPO DIAGNOSTICO 2'], 
             fila['TIPO DIAGNOSTICO 3']
