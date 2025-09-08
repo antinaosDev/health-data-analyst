@@ -10,12 +10,13 @@ import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
 from PIL import Image
+from class_pat import *
 
 
 
 #--------------------- FUNCION PARA PROCESAR CSV -----------------------------
 @st.cache_data(ttl=600) #Para carga mas rapida
-def proc_csv(archivo):
+def proc_csv(archivo,sep=None):
     try:
         rawdata = archivo.read(10000)
         result = chardet.detect(rawdata)
@@ -25,7 +26,7 @@ def proc_csv(archivo):
         df = pd.read_csv(
             archivo,
             encoding=encoding,
-            sep=None,
+            sep=sep,
             engine='python',
             on_bad_lines='skip'
         )
@@ -35,7 +36,7 @@ def proc_csv(archivo):
         return df
 
     except Exception as e:
-        st.error(f"No se pudo leer el archivo {getattr(archivo, 'name', 'archivo desconocido')}: {e}")
+        #st.error(f"No se pudo leer el archivo {getattr(archivo, 'name', 'archivo desconocido')}: {e}")
         return None
 
 
@@ -117,6 +118,32 @@ def procesamiento_agenda(lista_dfs):
     # Concatenar los DataFrames
     df_concat = pd.concat(lista_dfs, ignore_index=True)
 
+    df_concat = class_pat(df_concat)
+    import numpy as np
+
+    df_concat["Cont_Diag_1"] = np.where(df_concat["DIAGNOSTICO 1_CLASIFICADO"] == "Sin Clasificar", 0, df_concat["Cont_Diag_1"])
+    df_concat["Cont_Diag_2"] = np.where(df_concat["DIAGNOSTICO 2_CLASIFICADO"] == "Sin Clasificar", 0, df_concat["Cont_Diag_2"])
+    df_concat["Cont_Diag_3"] = np.where(df_concat["DIAGNOSTICO 3_CLASIFICADO"] == "Sin Clasificar", 0, df_concat["Cont_Diag_3"])
+
+    df_concat["TOTAL"] = (
+        df_concat["Cont_Diag_1"]
+        + df_concat["Cont_Diag_2"]
+        + df_concat["Cont_Diag_3"])
+
+    # Riesgo debe calcularse sobre df_con, no sobre df
+    def class_risk(n):
+        if n >= 5: 
+            return "G3:Riesgo severo" 
+        elif n >= 2: 
+            return "G2:Riesgo moderado" 
+        elif n == 1: 
+            return "G1:Riesgo leve" 
+        else: 
+            return "G0:Personas sanas o sin condiciones detectadas"
+
+    df_concat["RIESGO"] = df_concat["TOTAL"].fillna(0).astype(int).apply(class_risk)
+
+
     
     cols_work = [
         "RUT", "GENERO","DIRECCION", "COMUNA", "PROCEDENCIA", "PAIS DE PROCEDENCIA", "ETNIA PERCEPCION", "ESCOLARIDAD",
@@ -125,7 +152,9 @@ def procesamiento_agenda(lista_dfs):
         "ESTABLECIMIENTO", "HORA GENERADA", "ESTADO HORA", "ESTADO ATENCION", "ACCION A TOMAR", 
         "FECHA ASIGNADA", "HORA ASIGNADA", "FECHA EJECUTADA", "HORA EJECUTADA", "FECHA ULT MOD", "HORA UTL MOD",
         "TIPO_DIAGNOSTICO 1","TIPO DIAGNOSTICO 2","TIPO DIAGNOSTICO 3",
-        "DIAGNOSTICO 1","DIAGNOSTICO 2","DIAGNOSTICO 3","ESTADO 1","ESTADO 2","ESTADO 3",
+        "DIAGNOSTICO 1","DIAGNOSTICO 2","DIAGNOSTICO 3","ESTADO 1","ESTADO 2","ESTADO 3","Cont_Diag_1","Cont_Diag_2","Cont_Diag_3",
+        "DIAGNOSTICO 1_CLASIFICADO","DIAGNOSTICO 2_CLASIFICADO", "DIAGNOSTICO 3_CLASIFICADO","TOTAL","RIESGO"
+
     ]
 
     df_concat = df_concat[cols_work]
@@ -347,7 +376,7 @@ def procesamiento_agenda(lista_dfs):
     # GES: búsqueda parcial
     def es_ges(fila):
         # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        return 'SI' if any(str(f).strip().upper() == 'GES' for f in [
+        return 'SI' if any(str(f).strip().upper() == 'ES_GES' for f in [
             fila['TIPO_DIAGNOSTICO 1'], 
             fila['TIPO DIAGNOSTICO 2'], 
             fila['TIPO DIAGNOSTICO 3']
@@ -410,7 +439,7 @@ def reporte_percapita(archivos):
         total = len(archivos)
 
         for i, archivo in enumerate(archivos):
-            df = proc_csv(archivo)
+            df = proc_csv(archivo,sep=',')
             if df is not None:
                 lista.append(df)
                 my_bar.progress((i + 1) / total, text=f"{i + 1} de {total} archivos procesados")

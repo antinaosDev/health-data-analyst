@@ -369,8 +369,8 @@ if st.session_state.lista_dfs:
 
         graf6,graf7,graf8 = st.columns(3)
         with graf6:
-            df_ges = df_filtered.groupby('GES')['RUT'].nunique().reset_index()
-            fig = px.pie(df_ges,values='RUT',names='GES',title='% de Casos GES')
+            df_ges = df_filtered.groupby('ES_GES')['RUT'].nunique().reset_index()
+            fig = px.pie(df_ges,values='RUT',names='ES_GES',title='% de Casos GES')
             st.plotly_chart(fig,use_container_width=True)
 
         with graf7:

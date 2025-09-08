@@ -37,7 +37,7 @@ with col2:
 if archivos:
     df_global, df_auth, df_fall = reporte_percapita(archivos)
     st.markdown("#### Vista previa tabla:")
-    st.dataframe(df_global,hide_index=True)
+    st.dataframe(df_global.head(100),hide_index=True)
 
     #Capturo mi dataframe en un sesion state
     columnas_sesion = [
