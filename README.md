@@ -46,3 +46,64 @@ Se utilizan técnicas de **ciencia de datos**, análisis estadístico y visualiz
 
 ## 🔍 Estructura del Proyecto
 
+health-data-analyst/
+│
+├── 📂 .devcontainer/ # Configuración del entorno de desarrollo
+├── 📂 .streamlit/ # Configuración de Streamlit
+├── 📂 data_salud/ # Datos de entrada
+├── 📂 scripts/ # Scripts de análisis y limpieza
+├── 📄 app.py # Aplicación Streamlit principal
+├── 📄 README.md # Este archivo
+└── 📄 requirements.txt # Dependencias del proyecto
+
+
+---
+
+## 🚀 Instalación y Uso
+
+1. **Clonar el repositorio**
+
+git clone https://github.com/antinaosDev/health-data-analyst.git
+cd health-data-analyst
+
+
+**Instalar dependencias**
+
+pip install -r requirements.txt
+
+
+Ejecutar la aplicación Streamlit
+
+**streamlit run app.py**
+
+
+Accede a la aplicación en tu navegador: http://localhost:8501.
+
+**📊 Visualizaciones y Análisis**
+
+Distribución de pacientes por edad y sexo
+
+Análisis de costos hospitalarios por especialidad
+
+Tendencias de ingresos y egresos por periodo
+
+Identificación de patrones en la atención y recursos
+
+**🤝 Contribuciones**
+
+Las contribuciones son bienvenidas:
+
+Haz un fork del repositorio
+
+Crea una rama (git checkout -b feature/nueva-caracteristica)
+
+Realiza tus cambios y haz commit (git commit -am 'Añadir nueva característica')
+
+Sube tus cambios (git push origin feature/nueva-caracteristica)
+
+Abre un Pull Request
+
+📬 Contacto
+<p align="center"> <a href="mailto:alain.antinao.s@gmail.com"> <img src="https://img.shields.io/badge/Email-alain.antinao.s%40gmail.com-red?style=for-the-badge&logo=gmail"/> </a> <a href="https://github.com/antinaosDev"> <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white"/> </a> </p>
+<!-- Footer banner --> <p align="center"> <img src="https://capsule-render.vercel.app/api?type=waving&color=0:1E90FF,100:FF4B4B&height=120&section=footer"/> </p> 
+
