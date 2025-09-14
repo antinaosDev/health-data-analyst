@@ -63,8 +63,8 @@ health-data-analyst/
 
 ### 1. **Clonar el repositorio**
 
-git clone https://github.com/antinaosDev/health-data-analyst.git
-cd health-data-analyst
+- git clone https://github.com/antinaosDev/health-data-analyst.git
+- cd health-data-analyst
 
 
 ### **Instalar dependencias**
@@ -77,7 +77,7 @@ cd health-data-analyst
 - **streamlit run interfaz.py**
 
 
-## Accede a la aplicación en tu navegador: http://localhost:8501.
+### Accede a la aplicación en tu navegador: http://localhost:8501.
 
 **📊 Visualizaciones y Análisis**
 
