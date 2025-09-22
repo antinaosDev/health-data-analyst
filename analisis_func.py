@@ -153,7 +153,7 @@ def procesamiento_agenda(lista_dfs):
         "FECHA ASIGNADA", "HORA ASIGNADA", "FECHA EJECUTADA", "HORA EJECUTADA", "FECHA ULT MOD", "HORA UTL MOD",
         "TIPO_DIAGNOSTICO 1","TIPO DIAGNOSTICO 2","TIPO DIAGNOSTICO 3",
         "DIAGNOSTICO 1","DIAGNOSTICO 2","DIAGNOSTICO 3","ESTADO 1","ESTADO 2","ESTADO 3","Cont_Diag_1","Cont_Diag_2","Cont_Diag_3",
-        "DIAGNOSTICO 1_CLASIFICADO","DIAGNOSTICO 2_CLASIFICADO", "DIAGNOSTICO 3_CLASIFICADO","TOTAL","RIESGO"
+        "DIAGNOSTICO 1_CLASIFICADO","DIAGNOSTICO 2_CLASIFICADO", "DIAGNOSTICO 3_CLASIFICADO","TOTAL","RIESGO","TELEFONO1","TELEFONO2","TELEFONO3"
 
     ]
 
@@ -548,7 +548,7 @@ def reporte_percapita(archivos):
 
 
         #CREACION DE DF AUTORIZADOS
-        df_per_auth = df_per[(df_per['ACEPTADO_RECHAZADO'] == 'ACEPTADO')]
+        df_per_auth = df_per[(df_per['ACEPTADO_RECHAZADO'] == 'ACEPTADO') & (df_per['MES_CORTE'] == 'Agosto')]#MODIFICACION
         #limpieza de columnas innecesarias
         col_elem = ["RUN","DV","TRASLADO_POSITIVO","TRASLADO_NEGATIVO","EXBLOQUEADO","RECHAZADO_PREVISIONAL","RECHAZADO_FALLECIDO","AUTORIZADO","ACEPTADO_RECHAZADO","MOTIVO"]
         df_per_auth.drop(col_elem,axis=1,inplace=True) #Axis 1 indica que eliminare columnas
