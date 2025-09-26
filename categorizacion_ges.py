@@ -140,7 +140,7 @@ if st.session_state.lista_dfs:
         #Obtención de categoria clase etaria
         et_ops = df_con_clean['CLAS_ETARIA'].dropna().unique().tolist()
         et_ops.append('TODOS')
-        et_ops.remove('SIN DATOS')
+        #et_ops.remove('SIN DATOS')
 
     
         #Contendor de filtros
