@@ -13,7 +13,6 @@ from PIL import Image
 from class_pat import *
 
 
-
 #--------------------- FUNCION PARA PROCESAR CSV -----------------------------
 @st.cache_data(ttl=600) #Para carga mas rapida
 def proc_csv(archivo,sep=None):
@@ -119,18 +118,10 @@ def procesamiento_agenda(lista_dfs):
     df_concat = pd.concat(lista_dfs, ignore_index=True)
 
     df_concat = class_pat(df_concat)
-    import numpy as np
 
-    df_concat["Cont_Diag_1"] = np.where(df_concat["DIAGNOSTICO 1_CLASIFICADO"] == "Sin Clasificar", 0, df_concat["Cont_Diag_1"])
-    df_concat["Cont_Diag_2"] = np.where(df_concat["DIAGNOSTICO 2_CLASIFICADO"] == "Sin Clasificar", 0, df_concat["Cont_Diag_2"])
-    df_concat["Cont_Diag_3"] = np.where(df_concat["DIAGNOSTICO 3_CLASIFICADO"] == "Sin Clasificar", 0, df_concat["Cont_Diag_3"])
+    # Usamos directamente TOTAL_UNICAS (calculado en class_pat)
+    df_concat["TOTAL"] = df_concat["TOTAL_UNICAS"].fillna(0).astype(int)
 
-    df_concat["TOTAL"] = (
-        df_concat["Cont_Diag_1"]
-        + df_concat["Cont_Diag_2"]
-        + df_concat["Cont_Diag_3"])
-
-    # Riesgo debe calcularse sobre df_con, no sobre df
     def class_risk(n):
         if n >= 5: 
             return "G3:Riesgo severo" 
@@ -141,22 +132,29 @@ def procesamiento_agenda(lista_dfs):
         else: 
             return "G0:Personas sanas o sin condiciones detectadas"
 
-    df_concat["RIESGO"] = df_concat["TOTAL"].fillna(0).astype(int).apply(class_risk)
+    df_concat["RIESGO"] = df_concat["TOTAL"].apply(class_risk)
 
-
-    
-    cols_work = [
+    # Lista original de columnas
+    all_cols = [
         "RUT", "GENERO","DIRECCION", "COMUNA", "PROCEDENCIA", "PAIS DE PROCEDENCIA", "ETNIA PERCEPCION", "ESCOLARIDAD",
         "SITUACION CALLE","ES DISCAPACITADA","ES SENAME","ES EMBARAZADA","RUT PROFESIONAL",
         "PREVISION", "FECHA NACIMIENTO", "ESPECIALIDAD", "SUBESPECIALIDAD", "POLICLINICO", "AGRUPACION", 
         "ESTABLECIMIENTO", "HORA GENERADA", "ESTADO HORA", "ESTADO ATENCION", "ACCION A TOMAR", 
         "FECHA ASIGNADA", "HORA ASIGNADA", "FECHA EJECUTADA", "HORA EJECUTADA", "FECHA ULT MOD", "HORA UTL MOD",
-        "TIPO_DIAGNOSTICO 1","TIPO DIAGNOSTICO 2","TIPO DIAGNOSTICO 3",
-        "DIAGNOSTICO 1","DIAGNOSTICO 2","DIAGNOSTICO 3","ESTADO 1","ESTADO 2","ESTADO 3","Cont_Diag_1","Cont_Diag_2","Cont_Diag_3",
-        "DIAGNOSTICO 1_CLASIFICADO","DIAGNOSTICO 2_CLASIFICADO", "DIAGNOSTICO 3_CLASIFICADO","TOTAL","RIESGO","TELEFONO1","TELEFONO2","TELEFONO3"
-
+        "TIPO_DIAGNOSTICO 1","TIPO_DIAGNOSTICO 2","TIPO_DIAGNOSTICO 3",
+        "DIAGNOSTICO 1","DIAGNOSTICO 2","DIAGNOSTICO 3","ESTADO 1","ESTADO 2","ESTADO 3",
+        # "Cont_Diag_1",  # Eliminada: ya no existe
+        # "Cont_Diag_2",  # Eliminada: ya no existe
+        # "Cont_Diag_3",  # Eliminada: ya no existe
+        "DIAGNOSTICO 1_CLASIFICADO","DIAGNOSTICO 2_CLASIFICADO", "DIAGNOSTICO 3_CLASIFICADO",
+        "TOTAL_UNICAS",  # Nueva: generada por class_pat
+        "TOTAL","RIESGO","TELEFONO1","TELEFONO2","TELEFONO3"
     ]
 
+    # Filtrar solo las columnas que existen en df_concat
+    cols_work = [col for col in all_cols if col in df_concat.columns]
+
+    # Ahora seleccionar solo las columnas que existen
     df_concat = df_concat[cols_work]
     df_concat = df_concat.fillna('SIN DATOS')
 
@@ -376,11 +374,11 @@ def procesamiento_agenda(lista_dfs):
     # GES: búsqueda parcial
     def es_ges(fila):
         # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        return 'SI' if any(str(f).strip().upper() == 'GES' for f in [
-            fila['TIPO_DIAGNOSTICO 1'], 
-            fila['TIPO DIAGNOSTICO 2'], 
-            fila['TIPO DIAGNOSTICO 3']
-        ]) else 'NO'
+        # Usamos .get() para evitar KeyError si la columna no existe
+        tipo_diag_1 = fila.get('TIPO_DIAGNOSTICO 1', '')
+        tipo_diag_2 = fila.get('TIPO_DIAGNOSTICO 2', '')
+        tipo_diag_3 = fila.get('TIPO_DIAGNOSTICO 3', '')
+        return 'SI' if any(str(f).strip().upper() == 'GES' for f in [tipo_diag_1, tipo_diag_2, tipo_diag_3]) else 'NO'
 
 
     df_concat['ES_GES'] = df_concat.apply(es_ges, axis=1)
@@ -388,11 +386,10 @@ def procesamiento_agenda(lista_dfs):
 
     def es_conf(fila):
         # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        return 'SI' if any(str(f).strip().upper() == 'CONFIRMACION GES' for f in [
-            fila['ESTADO 1'], 
-            fila['ESTADO 2'], 
-            fila['ESTADO 3']
-        ]) else 'NO'
+        estado_1 = fila.get('ESTADO 1', '')
+        estado_2 = fila.get('ESTADO 2', '')
+        estado_3 = fila.get('ESTADO 3', '')
+        return 'SI' if any(str(f).strip().upper() == 'CONFIRMACION GES' for f in [estado_1, estado_2, estado_3]) else 'NO'
 
 
     df_concat['CONF_GES'] = df_concat.apply(es_conf, axis=1)
@@ -401,11 +398,10 @@ def procesamiento_agenda(lista_dfs):
 
     def es_sosp(fila):
         # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        return 'SI' if any(str(f).strip().upper() == 'SOSPECHA GES' for f in [
-            fila['ESTADO 1'], 
-            fila['ESTADO 2'], 
-            fila['ESTADO 3']
-        ]) else 'NO'
+        estado_1 = fila.get('ESTADO 1', '')
+        estado_2 = fila.get('ESTADO 2', '')
+        estado_3 = fila.get('ESTADO 3', '')
+        return 'SI' if any(str(f).strip().upper() == 'SOSPECHA GES' for f in [estado_1, estado_2, estado_3]) else 'NO'
 
 
     df_concat['SOSP_GES'] = df_concat.apply(es_sosp, axis=1)
@@ -414,11 +410,10 @@ def procesamiento_agenda(lista_dfs):
 
     def es_trat(fila):
         # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        return 'SI' if any(str(f).strip().upper() == 'TRATAMIENTO GES' for f in [
-            fila['ESTADO 1'], 
-            fila['ESTADO 2'], 
-            fila['ESTADO 3']
-        ]) else 'NO'
+        estado_1 = fila.get('ESTADO 1', '')
+        estado_2 = fila.get('ESTADO 2', '')
+        estado_3 = fila.get('ESTADO 3', '')
+        return 'SI' if any(str(f).strip().upper() == 'TRATAMIENTO GES' for f in [estado_1, estado_2, estado_3]) else 'NO'
 
 
     df_concat['TRAT_GES'] = df_concat.apply(es_trat, axis=1)
@@ -1051,8 +1046,6 @@ def footer():
                 <div style='text-align: left; color: #888888; font-size: 20px; padding-bottom: 20px;'>
                     💼 Aplicación desarrollada por <strong>Alain Antinao Sepúlveda</strong> <br>
                     📧 Contacto: <a href="mailto:alain.antinao.s@gmail.com" style="color: #4A90E2;">alain.antinao.s@gmail.com</a> <br>
-                    🌐 Más información en: <a href="https://alain-antinao-s.notion.site/Alain-C-sar-Antinao-Sep-lveda-1d20a081d9a980ca9d43e283a278053e" target="_blank" style="color: #4A90E2;">Mi página personal</a>
+                    🌐 Más información en: <a href="https://alain-antinao-s.notion.site/Alain-C-sar-Antinao-Sep-lveda-1d20a081d9a980ca9d43e283a278053e  " target="_blank" style="color: #4A90E2;">Mi página personal</a>
                 </div>
             """, unsafe_allow_html=True)
-
-

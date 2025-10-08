@@ -241,45 +241,34 @@ def class_pat(df):
                      .otherwise(expr)
         df_pl = df_pl.with_columns(expr.alias(f"{col}_CLASIFICADO"))
 
-    # Contar diagnósticos únicos por RUT, evitando "Sin Clasificar"
-
+    # Convertimos a Pandas para facilitar operaciones de agrupación
     df = df_pl.to_pandas()
 
-    df_num_class = (
-    df.groupby("RUT")[["DIAGNOSTICO 1_CLASIFICADO",
-                        "DIAGNOSTICO 2_CLASIFICADO",
-                        "DIAGNOSTICO 3_CLASIFICADO"]]
-    .nunique()
-    .reset_index()
-    .rename(columns={
-        "DIAGNOSTICO 1_CLASIFICADO": "Cont_Diag_1",
-        "DIAGNOSTICO 2_CLASIFICADO": "Cont_Diag_2",
-        "DIAGNOSTICO 3_CLASIFICADO": "Cont_Diag_3"
-    })
-)
+    # Crear una columna temporal que combine todos los diagnósticos clasificados en una lista
+    df['ALL_DIAGS'] = df.apply(
+        lambda row: [
+            row['DIAGNOSTICO 1_CLASIFICADO'],
+            row['DIAGNOSTICO 2_CLASIFICADO'],
+            row['DIAGNOSTICO 3_CLASIFICADO']
+        ], axis=1
+    )
 
-    """df_num_class["TOTAL"] = (
-        df_num_class["Cont_Diag_1"]
-        + df_num_class["Cont_Diag_2"]
-        + df_num_class["Cont_Diag_3"]
-    )"""
+    # Función para contar diagnósticos únicos por RUT (excluyendo "Sin Clasificar")
+    def get_unique_diagnostics(series_of_lists):
+        unique = set()
+        for lista in series_of_lists:
+            for diag in lista:
+                if diag != "Sin Clasificar":
+                    unique.add(diag)
+        return len(unique)
 
-   
+    # Agrupar por RUT y obtener conteo de patologías únicas
+    df_num_class = df.groupby("RUT")['ALL_DIAGS'].apply(get_unique_diagnostics).reset_index(name='TOTAL_UNICAS')
 
-    # Aquí df_con ya tiene tus nuevas columnas
+    # Merge con el dataframe original
     df_con = df.merge(df_num_class, on="RUT", how="left")
 
-    # Riesgo debe calcularse sobre df_con, no sobre df
-    def class_risk(n):
-        if n >= 5: 
-            return "G3:Riesgo severo" 
-        elif n >= 2: 
-            return "G2:Riesgo moderado" 
-        elif n == 1: 
-            return "G1:Riesgo leve" 
-        else: 
-            return "G0:Personas sanas o sin condiciones detectadas"
+    # Eliminar columna temporal
+    df_con = df_con.drop(columns=['ALL_DIAGS'], errors='ignore')
 
-    """df_con["RIESGO"] = df_con["TOTAL"].fillna(0).astype(int).apply(class_risk)
-"""
     return df_con

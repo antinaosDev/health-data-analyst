@@ -27,6 +27,7 @@ def ingresar_registro_bd(nom_tabla,datos):
     ref.push(datos)
 
     print(f'Ingreso exitoso! {nom_tabla}:{datos}')
+#ingresar_registro_bd("login",{"PASS":" ","USER":"","ROL":"Usuario"})
 
 def leer_registro(nom_tab,id_reg = None):
     if id_reg:
