@@ -543,7 +543,7 @@ def reporte_percapita(archivos):
 
 
         #CREACION DE DF AUTORIZADOS
-        df_per_auth = df_per[(df_per['ACEPTADO_RECHAZADO'] == 'ACEPTADO') & (df_per['MES_CORTE'] == 'Agosto')]#MODIFICACION
+        df_per_auth = df_per[(df_per['ACEPTADO_RECHAZADO'] == 'ACEPTADO') & (df_per['MES_CORTE'] == 'Septiembre')]#MODIFICACION
         #limpieza de columnas innecesarias
         col_elem = ["RUN","DV","TRASLADO_POSITIVO","TRASLADO_NEGATIVO","EXBLOQUEADO","RECHAZADO_PREVISIONAL","RECHAZADO_FALLECIDO","AUTORIZADO","ACEPTADO_RECHAZADO","MOTIVO"]
         df_per_auth.drop(col_elem,axis=1,inplace=True) #Axis 1 indica que eliminare columnas

@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import chardet
@@ -52,63 +53,76 @@ if archivos:
     tab1,tab2,tab3 = st.tabs(['📈Inscritos Percápita','📉Registro Fallecidos','📊Análisis de datos'],width='stretch')
 
     #Definición de perido de extraccion de datos
-    año_export_insc = df_auth['ANIO_CORTE'].astype(int).unique().tolist()
+    # Filtrar valores nulos o no numéricos antes de convertir
+    año_export_insc_raw = df_auth['ANIO_CORTE'].dropna()
+    año_export_insc_validos = año_export_insc_raw[pd.to_numeric(año_export_insc_raw, errors='coerce').notna()]
+    año_export_insc = año_export_insc_validos.astype(int).unique().tolist()
     año_export_insc.sort()#Se ordenan los valores
 
-    año_export_fall = df_fall['ANIO_CORTE'].unique().astype(int).tolist()
+    # Hacer lo mismo para df_fall
+    año_export_fall_raw = df_fall['ANIO_CORTE'].dropna()
+    año_export_fall_validos = año_export_fall_raw[pd.to_numeric(año_export_fall_raw, errors='coerce').notna()]
+    año_export_fall = año_export_fall_validos.astype(int).unique().tolist()
     año_export_fall.sort()#Se ordenan los valores
 
     with tab1:
         #Se define un container para mejor visualización
         with st.container(border=True):
-            opcion_año =st.select_slider('Seleccione un rango de años 📆',options= año_export_insc,value=(min(año_export_insc),max(año_export_insc)),key='opcion1')
-            anio_inicio, anio_fin = opcion_año
-            if not df_auth.empty:
-                # Filtrar DataFrame por año
-                df_filtrado = df_auth[
-                    (df_auth['ANIO_CORTE'] >= anio_inicio) &
-                    (df_auth['ANIO_CORTE'] <= anio_fin)
-                ]
-                # Agrupar datos
-                df_grouped = df_filtrado.groupby('ANIO_CORTE')['RUT'].count().reset_index()
-                df_grouped.columns = ['Año', 'Inscritos']
+            if año_export_insc:
+                opcion_año =st.select_slider('Seleccione un rango de años 📆',options= año_export_insc,value=(min(año_export_insc),max(año_export_insc)),key='opcion1')
+                anio_inicio, anio_fin = opcion_año
+                if not df_auth.empty:
+                    # Filtrar DataFrame por año
+                    df_filtrado = df_auth[
+                        (df_auth['ANIO_CORTE'] >= anio_inicio) &
+                        (df_auth['ANIO_CORTE'] <= anio_fin)
+                    ]
+                    # Agrupar datos
+                    df_grouped = df_filtrado.groupby('ANIO_CORTE')['RUT'].count().reset_index()
+                    df_grouped.columns = ['Año', 'Inscritos']
 
-                #Lista meses
-                lista_meses_insc = df_filtrado['MES_CORTE'].unique().tolist()
-                    
-                fig = px.bar(df_grouped,x='Año',y='Inscritos',text_auto=True,color='Año')
-                st.plotly_chart(fig,use_container_width=True)
+                    #Lista meses
+                    lista_meses_insc = df_filtrado['MES_CORTE'].unique().tolist()
+                        
+                    fig = px.bar(df_grouped,x='Año',y='Inscritos',text_auto=True,color='Año')
+                    st.plotly_chart(fig,use_container_width=True)
 
-                with st.container():
-                    col1,col2,col3,col4 = st.columns([4,4,4,4])
-                    with col2:
-                        export_to_csv(df_auth,'Inscritos_percapita',list(set(list(opcion_año))),opcion_año)
-                    with col3:
-                        export_to_excel(df_auth,'Inscritos_percapita',list(set(list(opcion_año))),list(set(lista_meses_insc)),opcion_año)
+                    with st.container():
+                        col1,col2,col3,col4 = st.columns([4,4,4,4])
+                        with col2:
+                            export_to_csv(df_auth,'Inscritos_percapita',list(set(list(opcion_año))),opcion_año)
+                        with col3:
+                            export_to_excel(df_auth,'Inscritos_percapita',list(set(list(opcion_año))),list(set(lista_meses_insc)),opcion_año)
+            else:
+                st.warning("No hay años disponibles para mostrar en la pestaña de Inscritos Percápita.")
+                
     with tab2:
         with st.container(border=True):
-            opcion_año =st.select_slider('Seleccione un rango de años 📆',options= año_export_fall,value=(min(año_export_fall),max(año_export_fall)),key='opcion2')
-            anio_inicio, anio_fin = opcion_año
-            if not df_fall.empty:
-                # Filtrar DataFrame por año
-                df_filtrado = df_fall[
-                    (df_fall['ANIO_CORTE'] >= anio_inicio) &
-                    (df_fall['ANIO_CORTE'] <= anio_fin)
-                ]
-                lista_meses_fall = df_filtrado['MES_CORTE'].unique().tolist()
+            if año_export_fall:
+                opcion_año =st.select_slider('Seleccione un rango de años 📆',options= año_export_fall,value=(min(año_export_fall),max(año_export_fall)),key='opcion2')
+                anio_inicio, anio_fin = opcion_año
+                if not df_fall.empty:
+                    # Filtrar DataFrame por año
+                    df_filtrado = df_fall[
+                        (df_fall['ANIO_CORTE'] >= anio_inicio) &
+                        (df_fall['ANIO_CORTE'] <= anio_fin)
+                    ]
+                    lista_meses_fall = df_filtrado['MES_CORTE'].unique().tolist()
 
-                # Agrupar datos
-                df_grouped = df_filtrado.groupby('ANIO_CORTE')['RUT'].count().reset_index()
-                df_grouped.columns = ['Año', 'Fallecidos']
+                    # Agrupar datos
+                    df_grouped = df_filtrado.groupby('ANIO_CORTE')['RUT'].count().reset_index()
+                    df_grouped.columns = ['Año', 'Fallecidos']
 
-                fig = px.bar(df_grouped,x='Año',y='Fallecidos',text_auto=True,color='Año')
-                st.plotly_chart(fig,use_container_width=True)
-                with st.container():
-                    col1,col2,col3,col4 = st.columns([4,4,4,4])
-                    with col2:
-                        export_to_csv(df_fall,'Nomina_Fallecidos',list(set(list(opcion_año))),opcion_año)
-                    with col3:
-                        export_to_excel(df_fall,'Nomina_Fallecidos',list(set(list(opcion_año))),list(set(lista_meses_fall)),opcion_año)
+                    fig = px.bar(df_grouped,x='Año',y='Fallecidos',text_auto=True,color='Año')
+                    st.plotly_chart(fig,use_container_width=True)
+                    with st.container():
+                        col1,col2,col3,col4 = st.columns([4,4,4,4])
+                        with col2:
+                            export_to_csv(df_fall,'Nomina_Fallecidos',list(set(list(opcion_año))),opcion_año)
+                        with col3:
+                            export_to_excel(df_fall,'Nomina_Fallecidos',list(set(list(opcion_año))),list(set(lista_meses_fall)),opcion_año)
+            else:
+                st.warning("No hay años disponibles para mostrar en la pestaña de Registro Fallecidos.")
                     
 
     with tab3:
@@ -116,7 +130,9 @@ if archivos:
         # Usar el DataFrame global (índice 0 de la tupla)
 
         # Años ordenados cronológicamente
-        años = df_global['ANIO_CORTE'].dropna().unique().tolist()
+        años_raw = df_global['ANIO_CORTE'].dropna()
+        años_validos = años_raw[pd.to_numeric(años_raw, errors='coerce').notna()]
+        años = años_validos.astype(int).unique().tolist()
         años = sorted(años)
 
         # Meses ordenados cronológicamente
@@ -135,14 +151,14 @@ if archivos:
                     año_slider = st.select_slider('Seleccione el rango de años 📆',años,value=(min(años),max(años)))
                 else:
                     # Usa el año disponible dos veces, o el actual si está vacío
-                    año_unico = años[0] if años else años[1]
+                    año_unico = años[0] if años else 2025 # Valor por defecto si no hay años
                     año_slider = (año_unico, año_unico)
                     st.info(f'Año evaluado 📆: {año_unico}')
             with col2:
                 if len(meses) >= 2:
                     meses_slider = st.select_slider('Seleccione un rango de meses 📆',meses,value=(meses[0],meses[len(meses)-1]))
                 else:
-                    mes_unico = meses[0] if meses else meses[1]
+                    mes_unico = meses[0] if meses else "Enero" # Valor por defecto si no hay meses
                     meses_slider = (mes_unico,mes_unico)
                     st.info(f'Mes evaluado 📆: {mes_unico}')
             with col3:
@@ -300,5 +316,3 @@ if archivos:
 
 #PIE DE PAGINA        
 footer()
-
-                
