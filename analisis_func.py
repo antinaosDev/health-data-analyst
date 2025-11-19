@@ -1,16 +1,18 @@
+
 import streamlit as st
 import pandas as pd
 import chardet
 from datetime import datetime
 import numpy as np
 import time
-from class_ges import *
+from class_ges import * # Asumiendo que class_ges.py está en el mismo directorio
+# from analisis_func import * # REMOVIDO: No se puede importar desde sí mismo
 import io
-import plotly.express as px
+import plotly.express as px # Importado aquí para el posible uso en footer()
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
 from PIL import Image
-from class_pat import *
+from class_pat import * # Asumiendo que class_pat.py está en el mismo directorio
 
 
 #--------------------- FUNCION PARA PROCESAR CSV -----------------------------
@@ -123,13 +125,13 @@ def procesamiento_agenda(lista_dfs):
     df_concat["TOTAL"] = df_concat["TOTAL_UNICAS"].fillna(0).astype(int)
 
     def class_risk(n):
-        if n >= 5: 
-            return "G3:Riesgo severo" 
-        elif n >= 2: 
-            return "G2:Riesgo moderado" 
-        elif n == 1: 
-            return "G1:Riesgo leve" 
-        else: 
+        if n >= 5:
+            return "G3:Riesgo severo"
+        elif n >= 2:
+            return "G2:Riesgo moderado"
+        elif n == 1:
+            return "G1:Riesgo leve"
+        else:
             return "G0:Personas sanas o sin condiciones detectadas"
 
     df_concat["RIESGO"] = df_concat["TOTAL"].apply(class_risk)
@@ -138,8 +140,8 @@ def procesamiento_agenda(lista_dfs):
     all_cols = [
         "RUT", "GENERO","DIRECCION", "COMUNA", "PROCEDENCIA", "PAIS DE PROCEDENCIA", "ETNIA PERCEPCION", "ESCOLARIDAD",
         "SITUACION CALLE","ES DISCAPACITADA","ES SENAME","ES EMBARAZADA","RUT PROFESIONAL",
-        "PREVISION", "FECHA NACIMIENTO", "ESPECIALIDAD", "SUBESPECIALIDAD", "POLICLINICO", "AGRUPACION", 
-        "ESTABLECIMIENTO", "HORA GENERADA", "ESTADO HORA", "ESTADO ATENCION", "ACCION A TOMAR", 
+        "PREVISION", "FECHA NACIMIENTO", "ESPECIALIDAD", "SUBESPECIALIDAD", "POLICLINICO", "AGRUPACION",
+        "ESTABLECIMIENTO", "HORA GENERADA", "ESTADO HORA", "ESTADO ATENCION", "ACCION A TOMAR",
         "FECHA ASIGNADA", "HORA ASIGNADA", "FECHA EJECUTADA", "HORA EJECUTADA", "FECHA ULT MOD", "HORA UTL MOD",
         "TIPO_DIAGNOSTICO 1","TIPO_DIAGNOSTICO 2","TIPO_DIAGNOSTICO 3",
         "DIAGNOSTICO 1","DIAGNOSTICO 2","DIAGNOSTICO 3","ESTADO 1","ESTADO 2","ESTADO 3",
@@ -336,7 +338,7 @@ def procesamiento_agenda(lista_dfs):
     df_concat['MES_ASIG_HR'] = df_concat['FECHA ASIGNADA'].dt.month.map(MESES_ES)
     #creacion columna año
     df_concat['ANIO_ASIG_HR'] = df_concat["FECHA ASIGNADA"].dt.year.astype('Int64')
-    
+
 
     #-----------------CREA COLUMNA DE MES Y AÑO PARA DETERMINAR LA EJECUCION DE LA HORA-------------------------------
     df_concat["FECHA EJECUTADA"] = pd.to_datetime(df_concat["FECHA EJECUTADA"],errors='coerce',dayfirst=True)
@@ -367,7 +369,7 @@ def procesamiento_agenda(lista_dfs):
     # Calcular diferencia en días
     df_concat["DIAS_ATENCION"] = (df_concat["FECHA EJECUTADA"] - df_concat["FECHA ASIGNADA"]).dt.days.astype('Int64')
 
-   
+
     # Reemplazar negativos por 0
     df_concat["DIAS_ATENCION"] = df_concat["DIAS_ATENCION"].clip(lower=0)
 
@@ -394,7 +396,7 @@ def procesamiento_agenda(lista_dfs):
 
     df_concat['CONF_GES'] = df_concat.apply(es_conf, axis=1)
 
-  
+
 
     def es_sosp(fila):
         # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
@@ -406,7 +408,7 @@ def procesamiento_agenda(lista_dfs):
 
     df_concat['SOSP_GES'] = df_concat.apply(es_sosp, axis=1)
 
-  
+
 
     def es_trat(fila):
         # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
@@ -467,7 +469,7 @@ def reporte_percapita(archivos):
         11: 'Noviembre',
         12: 'Diciembre'
     }
-    
+
         df_per['MES_CORTE'] = df_per['FECHA_CORTE'].dt.month.map(MESES_ES)
 
         #----------------Calcular edad---------------------------------------
@@ -747,7 +749,7 @@ def normaliza_direcc(df):
         "RUCUPURA":"repocura",
         "HUINOCO":"carirriñe",
         "CARRIRRE":"carirriñe",
-        "RUCAPANGUI":"rapahue",
+        "RUKAPANGUI":"rapahue",
         "RUKA":"rapahue",
         "DOLLINCO":"rapahue",
         "ANCAPULLI":"repocura",
@@ -971,7 +973,7 @@ def normaliza_direcc(df):
         "CULL":"repocura",
         "SCH":"cholchol"
     }
-    
+
     # Función para asignar distrito
     def asignar_comunidad(texto):
         texto = texto.upper()
@@ -982,7 +984,7 @@ def normaliza_direcc(df):
                     return distrito[0]
                 return distrito
         return "NO_ESPECIFICADO"
-    
+
     # Función para asignar distrito
     def asignar_distrito(texto):
         texto = texto.upper()
@@ -1046,6 +1048,20 @@ def footer():
                 <div style='text-align: left; color: #888888; font-size: 20px; padding-bottom: 20px;'>
                     💼 Aplicación desarrollada por <strong>Alain Antinao Sepúlveda</strong> <br>
                     📧 Contacto: <a href="mailto:alain.antinao.s@gmail.com" style="color: #4A90E2;">alain.antinao.s@gmail.com</a> <br>
-                    🌐 Más información en: <a href="https://alain-antinao-s.notion.site/Alain-C-sar-Antinao-Sep-lveda-1d20a081d9a980ca9d43e283a278053e  " target="_blank" style="color: #4A90E2;">Mi página personal</a>
+                    🌐 Más información en: <a href="https://alain-antinao-s.notion.site/Alain-C-sar-Antinao-Sep-lveda-1d20a081d9a980ca9d43e283a278053e    " target="_blank" style="color: #4A90E2;">Mi página personal</a>
                 </div>
             """, unsafe_allow_html=True)
+
+        # --- Verificación adicional para scatter_mapbox (si aplica) ---
+        # Este bloque es solo si en el footer() original se usaba scatter_mapbox.
+        # Dado que no lo veo en tu código original de footer(), lo comento.
+        # Si lo usas, asegúrate de tener datos válidos antes de llamarlo.
+        # with col1: # O cualquier contenedor donde vaya el mapa
+        #     # Asegúrate de que df_map_filtered tenga datos y columnas válidas
+        #     # y que las columnas 'LAT_CENTRO', 'LONG_CENTRO', 'RUT' no contengan ceros o NaN inválidos
+        #     # para el tamaño 'size'.
+        #     # df_map_filtered = ... (tu filtrado aquí)
+        #     # if not df_map_filtered.empty and (df_map_filtered['RUT'] > 0).any():
+        #     #     fig_map = px.scatter_mapbox(df_map_filtered, lat='LAT_CENTRO', lon='LONG_CENTRO', size='RUT', ...)
+        #     #     st.plotly_chart(fig_map, use_container_width=True)
+        #     pass # Remover si no se usa scatter_mapbox en el footer
