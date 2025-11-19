@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import chardet
@@ -308,25 +307,43 @@ if archivos:
             # Filtrar filas donde COUNT_RUT es 0 o negativo
             df_map = df_map[df_map['COUNT_RUT'] > 0]
 
-            if not df_map.empty:
-                try:
-                    # Usar px.scatter_map en lugar de px.scatter_mapbox
-                    fig = px.scatter_map(
-                        df_map,
-                        lat='LAT_CENTRO',
-                        lon='LONG_CENTRO',
-                        size='COUNT_RUT', # Usar la columna renombrada
-                        color='NOMBRE_CENTRO',
-                        zoom=10,
-                        map_style='open-street-map', # Cambiado de mapbox_style
-                        title="Distribución de Usuarios por Centro de Salud (Tamaño por Cantidad)"
-                    )
-                    st.plotly_chart(fig, use_container_width=True)
-                except Exception as e:
-                    st.error(f"Ocurrió un error al generar el mapa: {e}")
+            # --- Verificación adicional para evitar RangeError ---
+            if not df_map.empty and 'COUNT_RUT' in df_map.columns:
+                # Verificar si hay al menos un valor positivo en COUNT_RUT
+                if (df_map['COUNT_RUT'] > 0).any():
+                    # Verificar si hay al menos dos filas para evitar problemas si todos los sizes son iguales
+                    # y para que el gráfico tenga sentido
+                    if len(df_map) >= 1: # Cambié a >= 1 porque px.scatter_map puede manejar 1 punto
+                         # Verificar si todos los valores de COUNT_RUT son iguales (esto puede causar el error)
+                         if df_map['COUNT_RUT'].nunique() > 1 or len(df_map) == 1:
+                            try:
+                                # Usar px.scatter_map en lugar de px.scatter_mapbox
+                                fig = px.scatter_map(
+                                    df_map,
+                                    lat='LAT_CENTRO',
+                                    lon='LONG_CENTRO',
+                                    size='COUNT_RUT', # Usar la columna renombrada
+                                    color='NOMBRE_CENTRO',
+                                    zoom=10,
+                                    map_style='open-street-map', # Cambiado de mapbox_style
+                                    title="Distribución de Usuarios por Centro de Salud (Tamaño por Cantidad)"
+                                )
+                                st.plotly_chart(fig, use_container_width=True)
+                            except Exception as e:
+                                st.error(f"Ocurrió un error al generar el mapa: {e}")
+                                # Opcional: Mostrar df_map para depuración
+                                # st.write("Datos para el mapa:", df_map)
+                         else:
+                             # Todos los COUNT_RUT son iguales (y > 0), lo que puede causar el error
+                             st.warning("No hay variación en la cantidad de usuarios por centro para mostrar en el mapa (todos los tamaños serían iguales).")
+                    else:
+                        st.warning("No hay suficientes datos válidos para mostrar en el mapa.")
+                else:
+                    # Aunque se filtró, todos los COUNT_RUT podrían haber quedado <= 0
+                    st.warning("No hay datos válidos con usuarios positivos para mostrar en el mapa.")
             else:
+                # df_map está vacío o no tiene la columna COUNT_RUT
                 st.warning("No hay datos válidos para mostrar en el mapa (sin RUTs positivos o coordenadas válidas).")
-            
 
 #PIE DE PAGINA        
 footer()
