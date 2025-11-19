@@ -13,6 +13,7 @@ from PIL import Image
 from class_pat import *
 
 
+
 #--------------------- FUNCION PARA PROCESAR CSV -----------------------------
 @st.cache_data(ttl=600) #Para carga mas rapida
 def proc_csv(archivo,sep=None):
@@ -118,6 +119,7 @@ def procesamiento_agenda(lista_dfs):
     df_concat = pd.concat(lista_dfs, ignore_index=True)
 
     df_concat = class_pat(df_concat)
+    import numpy as np
 
     # Usamos directamente TOTAL_UNICAS (calculado en class_pat)
     df_concat["TOTAL"] = df_concat["TOTAL_UNICAS"].fillna(0).astype(int)
@@ -374,11 +376,11 @@ def procesamiento_agenda(lista_dfs):
     # GES: búsqueda parcial
     def es_ges(fila):
         # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        # Usamos .get() para evitar KeyError si la columna no existe
-        tipo_diag_1 = fila.get('TIPO_DIAGNOSTICO 1', '')
-        tipo_diag_2 = fila.get('TIPO_DIAGNOSTICO 2', '')
-        tipo_diag_3 = fila.get('TIPO_DIAGNOSTICO 3', '')
-        return 'SI' if any(str(f).strip().upper() == 'GES' for f in [tipo_diag_1, tipo_diag_2, tipo_diag_3]) else 'NO'
+        return 'SI' if any(str(f).strip().upper() == 'GES' for f in [
+            fila['TIPO_DIAGNOSTICO 1'], 
+            fila['TIPO DIAGNOSTICO 2'], 
+            fila['TIPO DIAGNOSTICO 3']
+        ]) else 'NO'
 
 
     df_concat['ES_GES'] = df_concat.apply(es_ges, axis=1)
@@ -386,10 +388,11 @@ def procesamiento_agenda(lista_dfs):
 
     def es_conf(fila):
         # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        estado_1 = fila.get('ESTADO 1', '')
-        estado_2 = fila.get('ESTADO 2', '')
-        estado_3 = fila.get('ESTADO 3', '')
-        return 'SI' if any(str(f).strip().upper() == 'CONFIRMACION GES' for f in [estado_1, estado_2, estado_3]) else 'NO'
+        return 'SI' if any(str(f).strip().upper() == 'CONFIRMACION GES' for f in [
+            fila['ESTADO 1'], 
+            fila['ESTADO 2'], 
+            fila['ESTADO 3']
+        ]) else 'NO'
 
 
     df_concat['CONF_GES'] = df_concat.apply(es_conf, axis=1)
@@ -398,10 +401,11 @@ def procesamiento_agenda(lista_dfs):
 
     def es_sosp(fila):
         # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        estado_1 = fila.get('ESTADO 1', '')
-        estado_2 = fila.get('ESTADO 2', '')
-        estado_3 = fila.get('ESTADO 3', '')
-        return 'SI' if any(str(f).strip().upper() == 'SOSPECHA GES' for f in [estado_1, estado_2, estado_3]) else 'NO'
+        return 'SI' if any(str(f).strip().upper() == 'SOSPECHA GES' for f in [
+            fila['ESTADO 1'], 
+            fila['ESTADO 2'], 
+            fila['ESTADO 3']
+        ]) else 'NO'
 
 
     df_concat['SOSP_GES'] = df_concat.apply(es_sosp, axis=1)
@@ -410,10 +414,11 @@ def procesamiento_agenda(lista_dfs):
 
     def es_trat(fila):
         # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        estado_1 = fila.get('ESTADO 1', '')
-        estado_2 = fila.get('ESTADO 2', '')
-        estado_3 = fila.get('ESTADO 3', '')
-        return 'SI' if any(str(f).strip().upper() == 'TRATAMIENTO GES' for f in [estado_1, estado_2, estado_3]) else 'NO'
+        return 'SI' if any(str(f).strip().upper() == 'TRATAMIENTO GES' for f in [
+            fila['ESTADO 1'], 
+            fila['ESTADO 2'], 
+            fila['ESTADO 3']
+        ]) else 'NO'
 
 
     df_concat['TRAT_GES'] = df_concat.apply(es_trat, axis=1)
@@ -543,7 +548,7 @@ def reporte_percapita(archivos):
 
 
         #CREACION DE DF AUTORIZADOS
-        df_per_auth = df_per[(df_per['ACEPTADO_RECHAZADO'] == 'ACEPTADO') & (df_per['MES_CORTE'] == 'Septiembre')]#MODIFICACION
+        df_per_auth = df_per[(df_per['ACEPTADO_RECHAZADO'] == 'ACEPTADO') & (df_per['MES_CORTE'] == 'Agosto')]#MODIFICACION
         #limpieza de columnas innecesarias
         col_elem = ["RUN","DV","TRASLADO_POSITIVO","TRASLADO_NEGATIVO","EXBLOQUEADO","RECHAZADO_PREVISIONAL","RECHAZADO_FALLECIDO","AUTORIZADO","ACEPTADO_RECHAZADO","MOTIVO"]
         df_per_auth.drop(col_elem,axis=1,inplace=True) #Axis 1 indica que eliminare columnas
@@ -1046,6 +1051,8 @@ def footer():
                 <div style='text-align: left; color: #888888; font-size: 20px; padding-bottom: 20px;'>
                     💼 Aplicación desarrollada por <strong>Alain Antinao Sepúlveda</strong> <br>
                     📧 Contacto: <a href="mailto:alain.antinao.s@gmail.com" style="color: #4A90E2;">alain.antinao.s@gmail.com</a> <br>
-                    🌐 Más información en: <a href="https://alain-antinao-s.notion.site/Alain-C-sar-Antinao-Sep-lveda-1d20a081d9a980ca9d43e283a278053e  " target="_blank" style="color: #4A90E2;">Mi página personal</a>
+                    🌐 Más información en: <a href="https://alain-antinao-s.notion.site/Alain-C-sar-Antinao-Sep-lveda-1d20a081d9a980ca9d43e283a278053e" target="_blank" style="color: #4A90E2;">Mi página personal</a>
                 </div>
             """, unsafe_allow_html=True)
+
+

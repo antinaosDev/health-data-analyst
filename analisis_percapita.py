@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import chardet
@@ -293,25 +292,39 @@ if archivos:
 
         
         with st.container(border=True):
+            # Agrupar los datos filtrados
             df_map = df_filtered.groupby(['NOMBRE_CENTRO', 'LAT_CENTRO', 'LONG_CENTRO'])['RUT'].nunique().reset_index()
+            df_map.columns = ['NOMBRE_CENTRO', 'LAT_CENTRO', 'LONG_CENTRO', 'COUNT_RUT'] # Renombrar para claridad
 
-            # Limpiamos las columnas LAT_CENTRO y LONG_CENTRO para extraer solo el primer número válido y convertir a float
+            # Limpiar y convertir LAT_CENTRO y LONG_CENTRO
             df_map['LAT_CENTRO'] = df_map['LAT_CENTRO'].astype(str).str.extract(r'(-?\d+\.\d+)')[0].astype(float)
             df_map['LONG_CENTRO'] = df_map['LONG_CENTRO'].astype(str).str.extract(r'(-?\d+\.\d+)')[0].astype(float)
 
-            # Creamos el gráfico
-            fig = px.scatter_mapbox(
-                df_map,
-                lat='LAT_CENTRO',
-                lon='LONG_CENTRO',
-                size='RUT',
-                color='NOMBRE_CENTRO',
-                zoom=10,
-                mapbox_style='open-street-map',
-            )
+            # Filtrar filas donde LAT o LON son NaN o infinito
+            df_map = df_map.replace([np.inf, -np.inf], np.nan)
+            df_map = df_map.dropna(subset=['LAT_CENTRO', 'LONG_CENTRO'])
 
-            # Mostrar figura en Streamlit
-            st.plotly_chart(fig)
+            # Filtrar filas donde COUNT_RUT es 0 o negativo
+            df_map = df_map[df_map['COUNT_RUT'] > 0]
+
+            if not df_map.empty:
+                try:
+                    # Usar px.scatter_map en lugar de px.scatter_mapbox
+                    fig = px.scatter_map(
+                        df_map,
+                        lat='LAT_CENTRO',
+                        lon='LONG_CENTRO',
+                        size='COUNT_RUT', # Usar la columna renombrada
+                        color='NOMBRE_CENTRO',
+                        zoom=10,
+                        map_style='open-street-map', # Cambiado de mapbox_style
+                        title="Distribución de Usuarios por Centro de Salud (Tamaño por Cantidad)"
+                    )
+                    st.plotly_chart(fig, use_container_width=True)
+                except Exception as e:
+                    st.error(f"Ocurrió un error al generar el mapa: {e}")
+            else:
+                st.warning("No hay datos válidos para mostrar en el mapa (sin RUTs positivos o coordenadas válidas).")
             
 
 #PIE DE PAGINA        
