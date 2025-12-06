@@ -1,22 +1,22 @@
-
 import streamlit as st
 import pandas as pd
 import chardet
 from datetime import datetime
 import numpy as np
 import time
-from class_ges import * # Asumiendo que class_ges.py está en el mismo directorio
-# from analisis_func import * # REMOVIDO: No se puede importar desde sí mismo
 import io
-import plotly.express as px # Importado aquí para el posible uso en footer()
+import re
+import unicodedata
+from PIL import Image
+import plotly.express as px 
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
-from PIL import Image
-from class_pat import * # Asumiendo que class_pat.py está en el mismo directorio
-
+# --- IMPORTS SEPARADOS CORRECTAMENTE ---
+from class_ges import * 
+from class_pat import *
 
 #--------------------- FUNCION PARA PROCESAR CSV -----------------------------
-@st.cache_data(ttl=600) #Para carga mas rapida
+@st.cache_data(ttl=600)
 def proc_csv(archivo,sep=None):
     try:
         rawdata = archivo.read(10000)
@@ -37,400 +37,408 @@ def proc_csv(archivo,sep=None):
         return df
 
     except Exception as e:
-        #st.error(f"No se pudo leer el archivo {getattr(archivo, 'name', 'archivo desconocido')}: {e}")
         return None
 
+# ------------------ FUNCIONES DE DESCARGA (CORREGIDAS PARA LISTAS) ------------------
 
-# ------------------ DESCARGA EN EXCEL ------------------
-def export_to_excel(df,nombre,mes,año,rango):
+def export_to_excel(df, nombre, anio_filtro=None, mes_filtro=None, columnas=None):
+    """
+    Exporta a Excel permitiendo filtrar por año (lista o único), mes (lista o único) y seleccionar columnas.
+    """
     excel_buffer = io.BytesIO()
+    df_exp = df.copy()
 
-    #Filtrado del DF
-    df = df[(df['ANIO_CORTE'] >= rango[0]) & (df['ANIO_CORTE'] <= rango[1])]
+    # 1. Filtro por Año (CORREGIDO PARA ACEPTAR LISTAS)
+    if anio_filtro is not None and 'ANIO_CORTE' in df_exp.columns:
+        # Caso A: Es una lista (Multiselect)
+        if isinstance(anio_filtro, list):
+            if len(anio_filtro) > 0:
+                # Convertimos a int cada elemento por seguridad
+                anios_ints = [int(x) for x in anio_filtro]
+                df_exp = df_exp[df_exp['ANIO_CORTE'].isin(anios_ints)]
+        # Caso B: Es un valor único (Selectbox o número)
+        elif isinstance(anio_filtro, (str, int, float)):
+            df_exp = df_exp[df_exp['ANIO_CORTE'] == int(anio_filtro)]
 
-    # Guardar el DataFrame en formato Excel en el buffer
+    # 2. Filtro por Mes
+    if mes_filtro is not None and 'MES_CORTE' in df_exp.columns:
+        # Caso A: Es una lista
+        if isinstance(mes_filtro, list):
+            if len(mes_filtro) > 0:
+                df_exp = df_exp[df_exp['MES_CORTE'].isin(mes_filtro)]
+        # Caso B: Es un valor único
+        elif isinstance(mes_filtro, str) and mes_filtro != "Todos":
+            df_exp = df_exp[df_exp['MES_CORTE'] == mes_filtro]
+
+    # 3. Selección de Columnas
+    if columnas is not None and len(columnas) > 0:
+        cols_validas = [c for c in columnas if c in df_exp.columns]
+        if cols_validas:
+            df_exp = df_exp[cols_validas]
+
+    # Escritura
     with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-        df.to_excel(writer, index=False, sheet_name='DATA')
+        df_exp.to_excel(writer, index=False, sheet_name='DATA')
 
     excel_buffer.seek(0)
+    
+    # Nombre dinámico del archivo
+    nombre_archivo = f"{nombre}"
+    if anio_filtro: nombre_archivo += "_filtrado"
+    nombre_archivo += ".xlsx"
 
-    # Botón de descarga
     st.download_button(
-        label="📥 Descargar Excel combinado",
+        label="📥 Descargar Excel Filtrado",
         data=excel_buffer,
-        file_name=f"{nombre}_{mes}_{año}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",use_container_width=True
+        file_name=nombre_archivo,
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        use_container_width=True
     )
 
-def export_to_csv(df,nombre,año,rango):
+def export_to_csv(df, nombre, anio_filtro=None, mes_filtro=None, columnas=None):
+    """
+    Exporta a CSV permitiendo filtrar por año (lista o único), mes (lista o único) y seleccionar columnas.
+    """
     csv_buffer = io.BytesIO()
+    df_exp = df.copy()
 
-    #Filtrado del DF
-    df = df[(df['ANIO_CORTE'] >= rango[0]) & (df['ANIO_CORTE'] <= rango[1])]
+    # 1. Filtro por Año (CORREGIDO PARA ACEPTAR LISTAS)
+    if anio_filtro is not None and 'ANIO_CORTE' in df_exp.columns:
+        # Caso A: Es una lista
+        if isinstance(anio_filtro, list):
+            if len(anio_filtro) > 0:
+                anios_ints = [int(x) for x in anio_filtro]
+                df_exp = df_exp[df_exp['ANIO_CORTE'].isin(anios_ints)]
+        # Caso B: Es un valor único
+        elif isinstance(anio_filtro, (str, int, float)):
+            df_exp = df_exp[df_exp['ANIO_CORTE'] == int(anio_filtro)]
 
+    # 2. Filtro por Mes
+    if mes_filtro is not None and 'MES_CORTE' in df_exp.columns:
+        # Caso A: Es una lista
+        if isinstance(mes_filtro, list):
+            if len(mes_filtro) > 0:
+                df_exp = df_exp[df_exp['MES_CORTE'].isin(mes_filtro)]
+        # Caso B: Es un valor único
+        elif isinstance(mes_filtro, str) and mes_filtro != "Todos":
+            df_exp = df_exp[df_exp['MES_CORTE'] == mes_filtro]
 
-    csv_content = df.to_csv(index=False).encode('utf-8')
+    # 3. Selección de Columnas
+    if columnas is not None and len(columnas) > 0:
+        cols_validas = [c for c in columnas if c in df_exp.columns]
+        if cols_validas:
+            df_exp = df_exp[cols_validas]
+
+    # Escritura
+    csv_content = df_exp.to_csv(index=False).encode('utf-8')
     csv_buffer.write(csv_content)
     csv_buffer.seek(0)
 
+    # Nombre dinámico
+    nombre_archivo = f"{nombre}"
+    if anio_filtro: nombre_archivo += "_filtrado"
+    nombre_archivo += ".csv"
+
     st.download_button(
-        label="📥 Descargar CSV combinado",
+        label="📥 Descargar CSV Filtrado",
         data=csv_buffer,
-        file_name=f"{nombre}_{año}.csv",
-        mime="text/csv",use_container_width=True
-        )
+        file_name=nombre_archivo,
+        mime="text/csv",
+        use_container_width=True
+    )
 
 def export_to_csv_gen(df,nombre,año):
     csv_buffer = io.BytesIO()
-
-
     csv_content = df.to_csv(index=False).encode('utf-8')
     csv_buffer.write(csv_content)
     csv_buffer.seek(0)
-
     st.download_button(
         label="📥 Descargar CSV combinado",
         data=csv_buffer,
         file_name=f"{nombre}_{año}.csv",
-        mime="text/csv",use_container_width=True
-        )
+        mime="text/csv",
+        use_container_width=True
+    )
 
 def export_to_excel_gen(df,nombre,año):
     excel_buffer = io.BytesIO()
-
-
-    # Guardar el DataFrame en formato Excel en el buffer
     with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
         df.to_excel(writer, index=False, sheet_name='DATA')
-
     excel_buffer.seek(0)
-
-    # Botón de descarga
     st.download_button(
         label="📥 Descargar Excel combinado",
         data=excel_buffer,
         file_name=f"{nombre}_{año}.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",use_container_width=True
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        use_container_width=True
     )
 
+# ------------------ PROCESAMIENTO AGENDA (PRINCIPAL) ------------------
 @st.cache_data(ttl=600)
 def procesamiento_agenda(lista_dfs):
 
-    # Concatenar los DataFrames
+    # 1. Concatenar los DataFrames
     df_concat = pd.concat(lista_dfs, ignore_index=True)
 
+    # 2. NORMALIZACIÓN DE ENCABEZADOS (A mayúsculas y sin espacios)
+    df_concat.columns = df_concat.columns.str.strip().str.upper()
+
+    # 3. RENOMBRADO INTELIGENTE
+    # Mapeamos nombres comunes a los nombres exactos que tú quieres
+    mapa_correccion = {
+        # RUT
+        "RUT_PROFESIONAL": "RUT PROFESIONAL",
+        "RUT_PROF": "RUT PROFESIONAL",
+        "RUN PROFESIONAL": "RUT PROFESIONAL",
+        "RUT MEDICO": "RUT PROFESIONAL",
+        
+        # NOMBRE
+        "NOMBRE_PROFESIONAL": "NOMBRE PROFESIONAL",
+        "NOMBRES PROFESIONAL": "NOMBRE PROFESIONAL",
+        "NOMBRES MEDICO": "NOMBRE PROFESIONAL",
+        "PROFESIONAL": "NOMBRE PROFESIONAL", # Si viene todo junto, lo asumimos como Nombre
+        
+        # MATERNO
+        "MATERNO_PROFESIONAL": "MATERNO PROFESIONAL",
+        "APELLIDO MATERNO PROFESIONAL": "MATERNO PROFESIONAL",
+        "MATERNO MEDICO": "MATERNO PROFESIONAL",
+        
+        # PATERNO (Por si acaso)
+        "PATERNO_PROFESIONAL": "PATERNO PROFESIONAL",
+        "APELLIDO PATERNO PROFESIONAL": "PATERNO PROFESIONAL",
+
+        # OTROS
+        "AGRUPACION_GES": "AGRUPACION",
+        "ESPEC": "ESPECIALIDAD"
+    }
+    df_concat.rename(columns=mapa_correccion, inplace=True)
+
+    # 4. Procesamiento externo
     df_concat = class_pat(df_concat)
 
-    # Usamos directamente TOTAL_UNICAS (calculado en class_pat)
-    df_concat["TOTAL"] = df_concat["TOTAL_UNICAS"].fillna(0).astype(int)
+    # 5. Lógica de Totales y Riesgo
+    if "TOTAL_UNICAS" in df_concat.columns:
+        df_concat["TOTAL"] = df_concat["TOTAL_UNICAS"].fillna(0).astype(int)
+    else:
+        df_concat["TOTAL"] = 0
 
     def class_risk(n):
-        if n >= 5:
-            return "G3:Riesgo severo"
-        elif n >= 2:
-            return "G2:Riesgo moderado"
-        elif n == 1:
-            return "G1:Riesgo leve"
-        else:
-            return "G0:Personas sanas o sin condiciones detectadas"
+        if n >= 5: return "G3:Riesgo severo"
+        elif n >= 2: return "G2:Riesgo moderado"
+        elif n == 1: return "G1:Riesgo leve"
+        else: return "G0:Personas sanas o sin condiciones detectadas"
 
     df_concat["RIESGO"] = df_concat["TOTAL"].apply(class_risk)
 
-    # Lista original de columnas
+    # =========================================================================
+    # 6. GARANTIZAR COLUMNAS SOLICITADAS
+    # =========================================================================
+    cols_obligatorias = [
+        "RUT PROFESIONAL", 
+        "NOMBRE PROFESIONAL",
+        "PATERNO PROFESIONAL",
+        "MATERNO PROFESIONAL",
+        "ESPECIALIDAD", 
+        "SUBESPECIALIDAD", 
+        "AGRUPACION"
+    ]
+    
+    for col in cols_obligatorias:
+        if col not in df_concat.columns:
+            # Si no existe en el Excel, crearla con "SIN DATOS"
+            df_concat[col] = "SIN DATOS"
+        else:
+            # Si existe, limpiar
+            df_concat[col] = df_concat[col].fillna("SIN DATOS").astype(str).str.strip().str.upper()
+            df_concat[col] = df_concat[col].replace(['NAN', 'NONE', 'NAT', 'nan'], "SIN DATOS")
+
+    # =========================================================================
+    # 7. LISTA FINAL DE EXPORTACIÓN (Actualizada)
+    # =========================================================================
     all_cols = [
         "RUT", "GENERO","DIRECCION", "COMUNA", "PROCEDENCIA", "PAIS DE PROCEDENCIA", "ETNIA PERCEPCION", "ESCOLARIDAD",
-        "SITUACION CALLE","ES DISCAPACITADA","ES SENAME","ES EMBARAZADA","RUT PROFESIONAL",
-        "PREVISION", "FECHA NACIMIENTO", "ESPECIALIDAD", "SUBESPECIALIDAD", "POLICLINICO", "AGRUPACION",
+        "SITUACION CALLE","ES DISCAPACITADA","ES SENAME","ES EMBARAZADA",
+        
+        # --- COLUMNAS DEL PROFESIONAL ---
+        "RUT PROFESIONAL", 
+        "NOMBRE PROFESIONAL",
+        "PATERNO PROFESIONAL", 
+        "MATERNO PROFESIONAL",
+        "ESPECIALIDAD", 
+        "SUBESPECIALIDAD", 
+        "AGRUPACION",
+        # -------------------------------
+
+        "PREVISION", "FECHA NACIMIENTO", "POLICLINICO",
         "ESTABLECIMIENTO", "HORA GENERADA", "ESTADO HORA", "ESTADO ATENCION", "ACCION A TOMAR",
         "FECHA ASIGNADA", "HORA ASIGNADA", "FECHA EJECUTADA", "HORA EJECUTADA", "FECHA ULT MOD", "HORA UTL MOD",
         "TIPO_DIAGNOSTICO 1","TIPO_DIAGNOSTICO 2","TIPO_DIAGNOSTICO 3",
         "DIAGNOSTICO 1","DIAGNOSTICO 2","DIAGNOSTICO 3","ESTADO 1","ESTADO 2","ESTADO 3",
-        # "Cont_Diag_1",  # Eliminada: ya no existe
-        # "Cont_Diag_2",  # Eliminada: ya no existe
-        # "Cont_Diag_3",  # Eliminada: ya no existe
         "DIAGNOSTICO 1_CLASIFICADO","DIAGNOSTICO 2_CLASIFICADO", "DIAGNOSTICO 3_CLASIFICADO",
-        "TOTAL_UNICAS",  # Nueva: generada por class_pat
+        "TOTAL_UNICAS", 
         "TOTAL","RIESGO","TELEFONO1","TELEFONO2","TELEFONO3"
     ]
 
-    # Filtrar solo las columnas que existen en df_concat
+    # FILTRO FINAL
     cols_work = [col for col in all_cols if col in df_concat.columns]
+    
+    # Crear copia final
+    df_final = df_concat[cols_work].copy()
+    df_final = df_final.fillna('SIN DATOS')
 
-    # Ahora seleccionar solo las columnas que existen
-    df_concat = df_concat[cols_work]
-    df_concat = df_concat.fillna('SIN DATOS')
-
-    # Estandarización por columnas
+    # --- Estandarización General ---
 
     # GENERO
-    df_concat["GENERO"] = df_concat["GENERO"].replace({
-        "HOMBRE": "MASCULINO",
-        "MUJER": "FEMENINO"
-    })
+    if "GENERO" in df_final.columns:
+        df_final["GENERO"] = df_final["GENERO"].replace({
+            "HOMBRE": "MASCULINO", "MUJER": "FEMENINO", "M": "MASCULINO", "F": "FEMENINO"
+        })
 
     # PAIS DE PROCEDENCIA
-    df_concat["PAIS DE PROCEDENCIA"] = df_concat["PAIS DE PROCEDENCIA"].replace({
-        "SIN INFORMACION": "SIN DATOS"
-    })
+    if "PAIS DE PROCEDENCIA" in df_final.columns:
+        df_final["PAIS DE PROCEDENCIA"] = df_final["PAIS DE PROCEDENCIA"].replace({"SIN INFORMACION": "SIN DATOS"})
 
-    # ETNIA PERCEPCION
-    df_concat["ETNIA PERCEPCION"] = df_concat["ETNIA PERCEPCION"].replace({
-        "MAPUCHE ": "MAPUCHE",
-        "NINGUNO ": "NINGUNO",
-        "COLLA ": "COLLA",
-        "DIAGUITA ": "DIAGUITA",
-        "QUECHUA ": "QUECHUA",
-        "ATACAMEÑO ": "ATACAMEÑO",
-        "AIMARA ": "AIMARA",
-        "SIN INFORMACION":"SIN DATOS",
-        "NO CONTESTA ": "SIN DATOS",
-        "OTRO PUEBLO ORIGINARIO DECLARADO ": "OTRO PUEBLO ORIGINARIO DECLARADO",
-        "NO SABE ": "SIN DATOS",
-        "ALACALUFE O KAWASHKAR": "ALACALUFE O KAWESQAR",
-        "YAMANA O YAGAN ": "YAMANA O YAGAN",
-        "ATACAMEÑO O LIKANANTAY": "ATACAMEÑO",
-        "AYMARA ": "AIMARA",
-        "ALACALUFE O KAWESQAR ": "ALACALUFE O KAWESQAR"
-    })
+    # ETNIA
+    if "ETNIA PERCEPCION" in df_final.columns:
+        reemplazos_etnia = {
+            "MAPUCHE ": "MAPUCHE", "NINGUNO ": "NINGUNO", "COLLA ": "COLLA",
+            "DIAGUITA ": "DIAGUITA", "QUECHUA ": "QUECHUA", "ATACAMEÑO ": "ATACAMEÑO",
+            "AIMARA ": "AIMARA", "SIN INFORMACION":"SIN DATOS", "NO CONTESTA ": "SIN DATOS",
+            "OTRO PUEBLO ORIGINARIO DECLARADO ": "OTRO PUEBLO ORIGINARIO DECLARADO",
+            "NO SABE ": "SIN DATOS", "ALACALUFE O KAWASHKAR": "ALACALUFE O KAWESQAR",
+            "YAMANA O YAGAN ": "YAMANA O YAGAN", "ATACAMEÑO O LIKANANTAY": "ATACAMEÑO",
+            "AYMARA ": "AIMARA", "ALACALUFE O KAWESQAR ": "ALACALUFE O KAWESQAR"
+        }
+        df_final["ETNIA PERCEPCION"] = df_final["ETNIA PERCEPCION"].replace(reemplazos_etnia)
 
     # ESCOLARIDAD
-    df_concat["ESCOLARIDAD"] = df_concat["ESCOLARIDAD"].replace({
-        "NO RESPONDE": "SIN DATOS",
-        "NO RECUERDA": "SIN DATOS",
-        "SIN INFORMACION": "SIN DATOS"
-    })
+    if "ESCOLARIDAD" in df_final.columns:
+        df_final["ESCOLARIDAD"] = df_final["ESCOLARIDAD"].replace({
+            "NO RESPONDE": "SIN DATOS", "NO RECUERDA": "SIN DATOS", "SIN INFORMACION": "SIN DATOS"
+        })
 
     # PREVISION
-    df_concat["PREVISION"] = df_concat["PREVISION"].astype(str).str.strip().str.upper()
-    df_concat["PREVISION"] = df_concat["PREVISION"].replace({
-        "ACTUALIZAR INFORMACION": "SIN DATOS",
-        "SIN INFORMACION": "SIN DATOS",
-        "INDIGENCIA": "SIN DATOS",
-        "PARTICULAR (SIN PREVISION)": "SIN DATOS",
-        "NO RESPONDE": "SIN DATOS"
-    })
+    if "PREVISION" in df_final.columns:
+        df_final["PREVISION"] = df_final["PREVISION"].astype(str).str.strip().str.upper()
+        df_final["PREVISION"] = df_final["PREVISION"].replace({
+            "ACTUALIZAR INFORMACION": "SIN DATOS", "SIN INFORMACION": "SIN DATOS",
+            "INDIGENCIA": "SIN DATOS", "PARTICULAR (SIN PREVISION)": "SIN DATOS",
+            "NO RESPONDE": "SIN DATOS"
+        })
 
-    #POLICLINICO
-    df_concat["POLICLINICO"] = df_concat["POLICLINICO"].astype(str).str.strip().str.upper()
+    # POLICLINICO
+    if "POLICLINICO" in df_final.columns:
+        df_final["POLICLINICO"] = df_final["POLICLINICO"].astype(str).str.strip().str.upper()
 
-    import re
-
-    # Función para limpiar nombres de comuna
+    # COMUNA
     def normalizar_comuna(comuna):
-        if pd.isnull(comuna):
-            return "SIN COMUNA"
-        # Elimina cualquier texto entre paréntesis y sus espacios
-        comuna = re.sub(r"\s*\(.*?\)", "", comuna)
-        # Elimina espacios extra
-        comuna = comuna.strip()
-        # Convierte a mayúsculas
-        comuna = comuna.upper()
-        return comuna
+        if pd.isnull(comuna): return "SIN COMUNA"
+        c = re.sub(r"\s*\(.*?\)", "", str(comuna))
+        return c.strip().upper()
 
-    # Aplicar normalización
-    df_concat['COMUNA'] = df_concat['COMUNA'].apply(normalizar_comuna)
+    if 'COMUNA' in df_final.columns:
+        df_final['COMUNA'] = df_final['COMUNA'].apply(normalizar_comuna)
 
+    # Eliminar duplicados
+    df_final = df_final.drop_duplicates()
 
-    #Eliminar duplicados
-    df_concat = df_concat.drop_duplicates()
+    # --- Calcular EDAD ---
+    if "FECHA NACIMIENTO" in df_final.columns:
+        df_final["FECHA NACIMIENTO"] = pd.to_datetime(df_final["FECHA NACIMIENTO"], errors='coerce',dayfirst=True)
+        hoy = pd.Timestamp.today()
+        df_final["EDAD"] = df_final["FECHA NACIMIENTO"].apply(lambda x: hoy.year - x.year - ((hoy.month, hoy.day) < (x.month, x.day)) if pd.notnull(x) else 0)
+    else:
+        df_final["EDAD"] = 0
 
-    #----------------Calcular edad---------------------------------------
-    # Asegura que la columna esté en formato datetime
-    df_concat["FECHA NACIMIENTO"] = pd.to_datetime(df_concat["FECHA NACIMIENTO"], errors='coerce',dayfirst=True)
-
-    # Fecha actual
-    hoy = pd.Timestamp.today()
-
-    # Calcular edad
-    df_concat["EDAD"] = df_concat["FECHA NACIMIENTO"].apply(lambda x: hoy.year - x.year - ((hoy.month, hoy.day) < (x.month, x.day)) if pd.notnull(x) else None)
-
-    #---------------Calculo de rango etario ----------------------------
-    # Define las condiciones por rango de edad
+    # --- Rango Etario ---
     condiciones = [
-        (df_concat["EDAD"] >= 0) & (df_concat["EDAD"] <= 9),
-        (df_concat["EDAD"] >= 10) & (df_concat["EDAD"] <= 19),
-        (df_concat["EDAD"] >= 20) & (df_concat["EDAD"] <= 29),
-        (df_concat["EDAD"] >= 30) & (df_concat["EDAD"] <= 39),
-        (df_concat["EDAD"] >= 40) & (df_concat["EDAD"] <= 49),
-        (df_concat["EDAD"] >= 50) & (df_concat["EDAD"] <= 59),
-        (df_concat["EDAD"] >= 60) & (df_concat["EDAD"] <= 69),
-        (df_concat["EDAD"] >= 70) & (df_concat["EDAD"] <= 79),
-        (df_concat["EDAD"] >= 80) & (df_concat["EDAD"] <= 89),
-        (df_concat["EDAD"] >= 90)
+        (df_final["EDAD"] >= 0) & (df_final["EDAD"] <= 9),
+        (df_final["EDAD"] >= 10) & (df_final["EDAD"] <= 19),
+        (df_final["EDAD"] >= 20) & (df_final["EDAD"] <= 29),
+        (df_final["EDAD"] >= 30) & (df_final["EDAD"] <= 39),
+        (df_final["EDAD"] >= 40) & (df_final["EDAD"] <= 49),
+        (df_final["EDAD"] >= 50) & (df_final["EDAD"] <= 59),
+        (df_final["EDAD"] >= 60) & (df_final["EDAD"] <= 69),
+        (df_final["EDAD"] >= 70) & (df_final["EDAD"] <= 79),
+        (df_final["EDAD"] >= 80) & (df_final["EDAD"] <= 89),
+        (df_final["EDAD"] >= 90)
     ]
+    valores = ["0 A 9", "10 A 19", "20 A 29", "30 A 39", "40 A 49", "50 A 59", "60 A 69", "70 A 79", "80 A 89", "90 O MAS"]
+    df_final["RANGO_ETARIO"] = np.select(condiciones, valores, default="SIN DATOS")
 
-    # Resultados correspondientes
-    valores = [
-        "0 A 9",
-        "10 A 19",
-        "20 A 29",
-        "30 A 39",
-        "40 A 49",
-        "50 A 59",
-        "60 A 69",
-        "70 A 79",
-        "80 A 89",
-        "90 O MAS"
-    ]
-
-    # Asignar rango etario
-    df_concat["RANGO_ETARIO"] = np.select(condiciones, valores, default="SIN DATOS")
-
-    #-------------------------CLASIFICACION ETARIA------------------------------------
-
+    # --- Clasificación Etaria ---
     condiciones_2 = [
-        (df_concat['EDAD']>=0) & (df_concat['EDAD']<=5),
-        (df_concat['EDAD']>=6) & (df_concat['EDAD']<=11),
-        (df_concat['EDAD']>=12) & (df_concat['EDAD']<=18),
-        (df_concat['EDAD']>=19) & (df_concat['EDAD']<=26),
-        (df_concat['EDAD']>=27) & (df_concat['EDAD']<=59),
-        (df_concat["EDAD"]>=60)
+        (df_final['EDAD']>=0) & (df_final['EDAD']<=5),
+        (df_final['EDAD']>=6) & (df_final['EDAD']<=11),
+        (df_final['EDAD']>=12) & (df_final['EDAD']<=18),
+        (df_final['EDAD']>=19) & (df_final['EDAD']<=26),
+        (df_final['EDAD']>=27) & (df_final['EDAD']<=59),
+        (df_final["EDAD"]>=60)
     ]
+    valores_2 = ["Primera infancia", "Infancia", "Adolescencia", "Juventud", "Adultez", "Persona mayor"]
+    df_final["CLAS_ETARIA"] = np.select(condiciones_2,valores_2,"SIN DATOS")
 
-    valores_2 = [
-        "Primera infancia",
-        "Infancia",
-        "Adolescencia",
-        "Juventud",
-        "Adultez",
-        "Persona mayor"
-    ]
+    # --- Clasificación Salarial ---
+    if "PREVISION" in df_final.columns:
+        condiciones_3 = [
+            df_final["PREVISION"] == "FONASA - A",
+            df_final["PREVISION"] == "FONASA - B",
+            df_final["PREVISION"] == "FONASA - C",
+            df_final["PREVISION"] == "FONASA - D"
+        ]
+        valores_3 = [
+            "Carente de recursos", "Imponible mensual <= $440.000",
+            "Imponible mensual > $440.000 y <= $642.400", "Imponible mensual > $642.400"
+        ]
+        df_final["RANGO_SALARIAL"] = np.select(condiciones_3, valores_3, default="SIN DATOS")
+    else:
+        df_final["RANGO_SALARIAL"] = "SIN DATOS"
 
-    df_concat["CLAS_ETARIA"] = np.select(condiciones_2,valores_2,"SIN DATOS")
+    # --- Fechas Asignadas ---
+    MESES_ES = {1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto', 9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'}
 
-    #----------------CLASIFICACION SALARIAL-----------------------
-    condiciones_3 = [
-        df_concat["PREVISION"] == "FONASA - A",
-        df_concat["PREVISION"] == "FONASA - B",
-        df_concat["PREVISION"] == "FONASA - C",
-        df_concat["PREVISION"] == "FONASA - D"
-    ]
+    if "FECHA ASIGNADA" in df_final.columns:
+        df_final["FECHA ASIGNADA"] = pd.to_datetime(df_final["FECHA ASIGNADA"],errors='coerce',dayfirst=True)
+        df_final['DIA_ASIG_HR'] = df_final["FECHA ASIGNADA"].dt.day.astype('Int64')
+        df_final['MES_ASIG_HR'] = df_final['FECHA ASIGNADA'].dt.month.map(MESES_ES)
+        df_final['ANIO_ASIG_HR'] = df_final["FECHA ASIGNADA"].dt.year.astype('Int64')
 
-    valores_3 = [
-        "Carente de recursos",
-        "Imponible mensual <= $440.000",
-        "Imponible mensual > $440.000 y <= $642.400",
-        "Imponible mensual > $642.400"
-    ]
+    # --- Fechas Ejecutadas ---
+    if "FECHA EJECUTADA" in df_final.columns:
+        df_final["FECHA EJECUTADA"] = pd.to_datetime(df_final["FECHA EJECUTADA"],errors='coerce',dayfirst=True)
+        df_final['DIA_EJEC_HR'] = df_final["FECHA EJECUTADA"].dt.day.astype('Int64')
+        df_final['MES_EJEC_HR'] = df_final['FECHA EJECUTADA'].dt.month.map(MESES_ES)
+        df_final['ANIO_EJEC_HR'] = df_final["FECHA EJECUTADA"].dt.year.astype('Int64')
 
-    df_concat["RANGO_SALARIAL"] = np.select(condiciones_3, valores_3, default="SIN DATOS")
+        if "FECHA ASIGNADA" in df_final.columns:
+            df_final["DIAS_ATENCION"] = (df_final["FECHA EJECUTADA"] - df_final["FECHA ASIGNADA"]).dt.days.astype('Int64')
+            df_final["DIAS_ATENCION"] = df_final["DIAS_ATENCION"].clip(lower=0)
+        else:
+            df_final["DIAS_ATENCION"] = 0
 
-    #---------------------SE CREA COLUMNA DE MES Y AÑO PARA IDENTIFICAR CADA PLANILLA-----------------------------------
-    df_concat["FECHA ASIGNADA"] = pd.to_datetime(df_concat["FECHA ASIGNADA"],errors='coerce',dayfirst=True)
+    # --- GES Flags ---
+    def check_keyword(fila, cols, keyword):
+        for col in cols:
+            val = str(fila.get(col, '')).strip().upper()
+            if val == keyword: return 'SI'
+        return 'NO'
 
-    #creacion columna dia
-    df_concat['DIA_ASIG_HR'] = df_concat["FECHA ASIGNADA"].dt.day.astype('Int64')
-    #creacion columna mes
-    MESES_ES = {
-    1: 'Enero',
-    2: 'Febrero',
-    3: 'Marzo',
-    4: 'Abril',
-    5: 'Mayo',
-    6: 'Junio',
-    7: 'Julio',
-    8: 'Agosto',
-    9: 'Septiembre',
-    10: 'Octubre',
-    11: 'Noviembre',
-    12: 'Diciembre'
-}
-    df_concat['MES_ASIG_HR'] = df_concat['FECHA ASIGNADA'].dt.month.map(MESES_ES)
-    #creacion columna año
-    df_concat['ANIO_ASIG_HR'] = df_concat["FECHA ASIGNADA"].dt.year.astype('Int64')
+    cols_diag = ['TIPO_DIAGNOSTICO 1', 'TIPO_DIAGNOSTICO 2', 'TIPO_DIAGNOSTICO 3']
+    cols_estado = ['ESTADO 1', 'ESTADO 2', 'ESTADO 3']
 
+    df_final['ES_GES'] = df_final.apply(lambda row: check_keyword(row, cols_diag, 'GES'), axis=1)
+    df_final['CONF_GES'] = df_final.apply(lambda row: check_keyword(row, cols_estado, 'CONFIRMACION GES'), axis=1)
+    df_final['SOSP_GES'] = df_final.apply(lambda row: check_keyword(row, cols_estado, 'SOSPECHA GES'), axis=1)
+    df_final['TRAT_GES'] = df_final.apply(lambda row: check_keyword(row, cols_estado, 'TRATAMIENTO GES'), axis=1)
 
-    #-----------------CREA COLUMNA DE MES Y AÑO PARA DETERMINAR LA EJECUCION DE LA HORA-------------------------------
-    df_concat["FECHA EJECUTADA"] = pd.to_datetime(df_concat["FECHA EJECUTADA"],errors='coerce',dayfirst=True)
-
-    #creacion columna mes
-    df_concat['DIA_EJEC_HR'] = df_concat["FECHA EJECUTADA"].dt.day.astype('Int64')
-    #creacion columna mes
-    MESES_ES = {
-    1: 'Enero',
-    2: 'Febrero',
-    3: 'Marzo',
-    4: 'Abril',
-    5: 'Mayo',
-    6: 'Junio',
-    7: 'Julio',
-    8: 'Agosto',
-    9: 'Septiembre',
-    10: 'Octubre',
-    11: 'Noviembre',
-    12: 'Diciembre'
-}
-
-    df_concat['MES_EJEC_HR'] = df_concat['FECHA EJECUTADA'].dt.month.map(MESES_ES)
-    #creacion columna año
-    df_concat['ANIO_EJEC_HR'] = df_concat["FECHA EJECUTADA"].dt.year.astype('Int64')
-
-    #--------------Calculo de los dias entre asignacion de hora y atencion----------------------------------------
-    # Calcular diferencia en días
-    df_concat["DIAS_ATENCION"] = (df_concat["FECHA EJECUTADA"] - df_concat["FECHA ASIGNADA"]).dt.days.astype('Int64')
+    return df_final
 
 
-    # Reemplazar negativos por 0
-    df_concat["DIAS_ATENCION"] = df_concat["DIAS_ATENCION"].clip(lower=0)
-
-    # GES: búsqueda parcial
-    def es_ges(fila):
-        # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        # Usamos .get() para evitar KeyError si la columna no existe
-        tipo_diag_1 = fila.get('TIPO_DIAGNOSTICO 1', '')
-        tipo_diag_2 = fila.get('TIPO_DIAGNOSTICO 2', '')
-        tipo_diag_3 = fila.get('TIPO_DIAGNOSTICO 3', '')
-        return 'SI' if any(str(f).strip().upper() == 'GES' for f in [tipo_diag_1, tipo_diag_2, tipo_diag_3]) else 'NO'
-
-
-    df_concat['ES_GES'] = df_concat.apply(es_ges, axis=1)
-
-
-    def es_conf(fila):
-        # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        estado_1 = fila.get('ESTADO 1', '')
-        estado_2 = fila.get('ESTADO 2', '')
-        estado_3 = fila.get('ESTADO 3', '')
-        return 'SI' if any(str(f).strip().upper() == 'CONFIRMACION GES' for f in [estado_1, estado_2, estado_3]) else 'NO'
-
-
-    df_concat['CONF_GES'] = df_concat.apply(es_conf, axis=1)
-
-
-
-    def es_sosp(fila):
-        # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        estado_1 = fila.get('ESTADO 1', '')
-        estado_2 = fila.get('ESTADO 2', '')
-        estado_3 = fila.get('ESTADO 3', '')
-        return 'SI' if any(str(f).strip().upper() == 'SOSPECHA GES' for f in [estado_1, estado_2, estado_3]) else 'NO'
-
-
-    df_concat['SOSP_GES'] = df_concat.apply(es_sosp, axis=1)
-
-
-
-    def es_trat(fila):
-        # Revisar si alguna celda tiene exactamente "GES" (ignorando mayúsculas/minúsculas y espacios)
-        estado_1 = fila.get('ESTADO 1', '')
-        estado_2 = fila.get('ESTADO 2', '')
-        estado_3 = fila.get('ESTADO 3', '')
-        return 'SI' if any(str(f).strip().upper() == 'TRATAMIENTO GES' for f in [estado_1, estado_2, estado_3]) else 'NO'
-
-
-    df_concat['TRAT_GES'] = df_concat.apply(es_trat, axis=1)
-
-    return df_concat
-
-
-        
 #--------------------- REPORTE PERCAPITA -----------------------------
 @st.cache_data(ttl=600)
 def reporte_percapita(archivos):
-
     if archivos:
         lista = []
-
         progess_text = "Procesando archivos..."
         my_bar = st.progress(0,text=progess_text)
         total = len(archivos)
@@ -446,79 +454,43 @@ def reporte_percapita(archivos):
             df_per = pd.concat(lista, ignore_index=True)
         else:
             st.warning("No se pudo cargar ningún archivo correctamente.")
+            return None, None, None
 
-        #-------------------PROCESAR ARCHIVOS---------------------------
-        #UNIFICACION DE COLUMNAS RUN Y DV PARA CREAR RUT
-        df_per['RUT'] = df_per['RUN'].astype(str).str.strip() + '-' + df_per['DV'].astype(str).str.upper().str.strip()
+        # UNIFICACION DE COLUMNAS RUN Y DV PARA CREAR RUT
+        if 'RUN' in df_per.columns and 'DV' in df_per.columns:
+            df_per['RUT'] = df_per['RUN'].astype(str).str.strip() + '-' + df_per['DV'].astype(str).str.upper().str.strip()
+        elif 'RUN' in df_per.columns:
+            df_per['RUT'] = df_per['RUN'].astype(str)
 
-        #SE EXTRAE MES Y AÑO DE LA FECHA_CORTE
-        df_per['FECHA_CORTE'] = pd.to_datetime(df_per['FECHA_CORTE'], errors="coerce") #coerce convierte fechas inválidas en NaT
-
+        # FECHAS CORTE
+        df_per['FECHA_CORTE'] = pd.to_datetime(df_per['FECHA_CORTE'], errors="coerce")
         df_per['ANIO_CORTE'] = df_per['FECHA_CORTE'].dt.year
-        MESES_ES = {
-        1: 'Enero',
-        2: 'Febrero',
-        3: 'Marzo',
-        4: 'Abril',
-        5: 'Mayo',
-        6: 'Junio',
-        7: 'Julio',
-        8: 'Agosto',
-        9: 'Septiembre',
-        10: 'Octubre',
-        11: 'Noviembre',
-        12: 'Diciembre'
-    }
-
+        MESES_ES = {1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto', 9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'}
         df_per['MES_CORTE'] = df_per['FECHA_CORTE'].dt.month.map(MESES_ES)
 
-        #----------------Calcular edad---------------------------------------
-        # Asegura que la columna esté en formato datetime
+        # EDAD
         df_per["FECHA_NACIMIENTO"] = pd.to_datetime(df_per["FECHA_NACIMIENTO"], errors='coerce')
-
-        # Fecha actual
         hoy = pd.Timestamp.today()
-
-        # Calcular edad
         df_per["EDAD"] = df_per["FECHA_NACIMIENTO"].apply(lambda x: hoy.year - x.year - ((hoy.month, hoy.day) < (x.month, x.day)) if pd.notnull(x) else None)
 
+        # GENERO
+        if 'GENERO' in df_per.columns:
+            df_per['GENERO'] = df_per['GENERO'].replace({'HOMBRE':'MASCULINO','M':'MASCULINO','MUJER':'FEMENINO','F':'FEMENINO'})
 
-
-        #Reemplazo de valores mal categorizados
-        df_per['GENERO'] = df_per['GENERO'].replace({
-            'HOMBRE':'MASCULINO',
-            'M':'MASCULINO',
-            'MUJER':'FEMENINO',
-            'F':'FEMENINO'
-        })
-
-        #---------------------Determinar la Ubicación de los centros---------------------------------------
+        # UBICACION CENTROS
         condicion_4 = [
             (df_per["NOMBRE_CENTRO"] == "Posta De Salud Rural Huamaqui"),
             (df_per["NOMBRE_CENTRO"] == "Posta De Salud Rural Huentelar"),
             (df_per["NOMBRE_CENTRO"] == "Posta De Salud Rural Malalche"),
             (df_per["NOMBRE_CENTRO"] == "Centro De Salud Familiar Chol Chol"),
         ]
-
-        valor_lat = [
-            '-38.459427',
-            '-38.499904',
-            '-38.574594',
-            '-38.607155'
-        ]
-
-        valor_long = [
-            '-72.984437',
-            '-72.885185',
-            '-72.945315',
-            '-72.842595'
-        ]
+        valor_lat = ['-38.459427', '-38.499904', '-38.574594', '-38.607155']
+        valor_long = ['-72.984437', '-72.885185', '-72.945315', '-72.842595']
 
         df_per["LAT_CENTRO"] = np.select(condicion_4,valor_lat,"SIN DATOS")
         df_per["LONG_CENTRO"] = np.select(condicion_4,valor_long,"SIN DATOS")
 
-         #-------------------------CLASIFICACION ETARIA------------------------------------
-
+        # RANGO ETARIO
         condiciones_5 = [
             (df_per['EDAD']>=0) & (df_per['EDAD']<=5),
             (df_per['EDAD']>=6) & (df_per['EDAD']<=11),
@@ -527,80 +499,62 @@ def reporte_percapita(archivos):
             (df_per['EDAD']>=27) & (df_per['EDAD']<=59),
             (df_per["EDAD"]>=60)
         ]
-
-        valores_5 = [
-            "Primera infancia",
-            "Infancia",
-            "Adolescencia",
-            "Juventud",
-            "Adultez",
-            "Persona mayor"
-        ]
-
+        valores_5 = ["Primera infancia", "Infancia", "Adolescencia", "Juventud", "Adultez", "Persona mayor"]
         df_per['RANGO_ETARIO'] = np.select(condiciones_5,valores_5,'SIN DATOS')
 
-
-        #Limpieza de registros duplicados DF GLOBAL
+        # DUPLICADOS
         df_per.drop_duplicates(inplace=True)
 
+        # AUTORIZADOS
+        if 'ACEPTADO_RECHAZADO' in df_per.columns:
+            # Sin filtro forzado de mes aquí, se filtra en la exportación
+            df_per_auth = df_per[(df_per['ACEPTADO_RECHAZADO'] == 'ACEPTADO')]
+            
+            col_elem = ["RUN","DV","TRASLADO_POSITIVO","TRASLADO_NEGATIVO","EXBLOQUEADO","RECHAZADO_PREVISIONAL","RECHAZADO_FALLECIDO","AUTORIZADO","ACEPTADO_RECHAZADO","MOTIVO"]
+            col_elem = [c for c in col_elem if c in df_per_auth.columns]
+            df_per_auth.drop(col_elem,axis=1,inplace=True)
+        else:
+            df_per_auth = df_per.copy()
 
-        #CREACION DE DF AUTORIZADOS
-        df_per_auth = df_per[(df_per['ACEPTADO_RECHAZADO'] == 'ACEPTADO') & (df_per['MES_CORTE'] == 'Septiembre')]#MODIFICACION
-        #limpieza de columnas innecesarias
-        col_elem = ["RUN","DV","TRASLADO_POSITIVO","TRASLADO_NEGATIVO","EXBLOQUEADO","RECHAZADO_PREVISIONAL","RECHAZADO_FALLECIDO","AUTORIZADO","ACEPTADO_RECHAZADO","MOTIVO"]
-        df_per_auth.drop(col_elem,axis=1,inplace=True) #Axis 1 indica que eliminare columnas
-
-        #Creacion de DF Fallecidos
-        df_per_fall = df_per[df_per['MOTIVO'] == 'RECHAZADO FALLECIDO']
-        # Borrar ruts duplicados
-        df_per_fall.drop_duplicates(subset='RUT', inplace=True)
-        # Limpieza de columnas innecesarias
-        col_df = ["RUT", "ANIO_CORTE", "MES_CORTE"]
-        df_per_fall = df_per_fall[col_df]
+        # FALLECIDOS
+        if 'MOTIVO' in df_per.columns:
+            df_per_fall = df_per[df_per['MOTIVO'] == 'RECHAZADO FALLECIDO']
+            df_per_fall.drop_duplicates(subset='RUT', inplace=True)
+            col_df = ["RUT", "ANIO_CORTE", "MES_CORTE"]
+            col_df = [c for c in col_df if c in df_per_fall.columns]
+            df_per_fall = df_per_fall[col_df]
+        else:
+             df_per_fall = pd.DataFrame()
 
     return df_per,df_per_auth,df_per_fall
 
 
-
-
 @st.cache_data(ttl=600)
 def normaliza_direcc(df):
-    import re
-    import unicodedata  # <-- Esto faltaba
+    
     # --- Funciones de limpieza ---
-    # 1️⃣ Normalizar mayúsculas y eliminar tildes
     def normalizar_texto(texto):
         texto = str(texto).upper()
-        texto = ''.join(c for c in unicodedata.normalize('NFD', texto)
-                        if unicodedata.category(c) != 'Mn')
+        texto = ''.join(c for c in unicodedata.normalize('NFD', texto) if unicodedata.category(c) != 'Mn')
         return texto
 
-    # 2️⃣ Limpiar caracteres raros y múltiples espacios
     def limpiar_basico(texto):
-        texto = re.sub(r'[^A-Z0-9Ñ\s]', ' ', texto)  # eliminar símbolos raros
-        texto = re.sub(r'\s+', ' ', texto).strip()   # quitar espacios extras
+        texto = re.sub(r'[^A-Z0-9Ñ\s]', ' ', texto)  
+        texto = re.sub(r'\s+', ' ', texto).strip()   
         return texto
 
-    # 3️⃣ Normalizar abreviaturas comunes
     def normalizar_abreviaturas(texto):
         reemplazos = {
-            r'\bN[º°?.]?\b': ' NUMERO ',
-            r'\bS/N\b': ' SIN NUMERO ',
-            r'\bSN\b': ' SIN NUMERO ',
-            r'\bCAM\b': ' CAMINO ',
-            r'\bLG\b': ' LUGAR ',
-            r'\bPJE\b': ' PASAJE ',
+            r'\bN[º°?.]?\b': ' NUMERO ', r'\bS/N\b': ' SIN NUMERO ', r'\bSN\b': ' SIN NUMERO ',
+            r'\bCAM\b': ' CAMINO ', r'\bLG\b': ' LUGAR ', r'\bPJE\b': ' PASAJE ',
         }
         for patron, reemplazo in reemplazos.items():
             texto = re.sub(patron, reemplazo, texto)
         return texto
 
-    # 4️⃣ Corregir errores frecuentes
     errores_comunes = {
-        "CARRERRI E": "CARRERRENE",
-        "CARRERRIA": "CARRERRENE",
-        "CARRERRIÑE": "CARRERRENE",
-        "CHOL CHOL": "CHOLCHOL",
+        "CARRERRI E": "CARRERRENE", "CARRERRIA": "CARRERRENE",
+        "CARRERRIÑE": "CARRERRENE", "CHOL CHOL": "CHOLCHOL",
     }
 
     def corregir_errores(texto):
@@ -608,7 +562,6 @@ def normaliza_direcc(df):
             texto = texto.replace(mal, bien)
         return texto
 
-    # --- Pipeline completo ---
     def limpiar_direccion(texto):
         texto = normalizar_texto(texto)
         texto = limpiar_basico(texto)
@@ -616,15 +569,15 @@ def normaliza_direcc(df):
         texto = corregir_errores(texto)
         return texto
 
-    # Aplicar limpieza a la columna 'DIRECCION'
-    df['DIRECCION_NORM'] = df['DIRECCION'].apply(limpiar_direccion)
+    if 'DIRECCION' in df.columns:
+        df['DIRECCION_NORM'] = df['DIRECCION'].apply(limpiar_direccion)
+    else:
+        df['DIRECCION_NORM'] = "SIN DATOS"
 
-    # Mostrar ejemplo
-    print(df[['DIRECCION', 'DIRECCION_NORM']].head(20))
-
+    if 'DIRECCION' in df.columns:
+        print(df[['DIRECCION', 'DIRECCION_NORM']].head(20))
 
     sector_a_comunidad = {
-    ##########COMUNIDADES
     "ANSELMO QUINTRI": "Anselmo Quintriqueo",
     "PEDRO MARIN": "Pedro Marin Calcucura",
     "AGUSTIN PAINE": "Juan Agustin Painequeo",
@@ -743,7 +696,7 @@ def normaliza_direcc(df):
         "COIHUE CURACO": "cholchol",
         "LLANQUINAO": "tranahuillin",
         "COILACO": "cholchol",
-        "HUAMAQUI":  "repocura",  # Puede aparecer en distintos distritos
+        "HUAMAQUI":  "repocura",  
         "COIHUE":"cholchol",
         "CARRERRE":"carirriñe",
         "RUCUPURA":"repocura",
@@ -974,48 +927,35 @@ def normaliza_direcc(df):
         "SCH":"cholchol"
     }
 
-    # Función para asignar distrito
     def asignar_comunidad(texto):
         texto = texto.upper()
         for sector, distrito in sector_a_comunidad.items():
             if sector in texto:
-                # Si hay varios posibles distritos, toma el primero
-                if isinstance(distrito, list):
-                    return distrito[0]
+                if isinstance(distrito, list): return distrito[0]
                 return distrito
         return "NO_ESPECIFICADO"
 
-    # Función para asignar distrito
     def asignar_distrito(texto):
         texto = texto.upper()
         for sector, distrito in sector_a_distrito.items():
             if sector in texto:
-                # Si hay varios posibles distritos, toma el primero
-                if isinstance(distrito, list):
-                    return distrito[0]
+                if isinstance(distrito, list): return distrito[0]
                 return distrito
         return "NO_ESPECIFICADO"
 
-    # Aplicar la función
-    #df = df[df['COMUNA'] == 'CHOL CHOL']
     df['DISTRITO'] = df['DIRECCION_NORM'].apply(asignar_distrito)
     df['COMUNIDAD'] = df['DIRECCION_NORM'].apply(asignar_comunidad)
 
-    # Ver resultados
-    print(df[['DIRECCION_NORM', 'DISTRITO']].head(20))
+    if 'DIRECCION_NORM' in df.columns:
+        print(df[['DIRECCION_NORM', 'DISTRITO']].head(20))
 
-    # Crear la columna SECTOR con un valor por defecto
     df['SECTOR'] = 'NO_ESPECIFICADO'
     df['LAT_SEC'] = 'NO_ESPECIFICADO'
     df['LON_SEC'] = 'NO_ESPECIFICADO'
 
-    # Asignar 'Luna' a distritos específicos
     df.loc[df['DISTRITO'].isin(['carirriñe', 'repocura', 'rapahue']), 'SECTOR'] = 'Luna'
-
-    # Asignar 'Sol' a otros distritos
     df.loc[df['DISTRITO'].isin(['cholchol', 'tranahuillin']), 'SECTOR'] = 'Sol'
 
-    # Asignar coordenadas
     df.loc[df['DISTRITO'].isin(['repocura']), 'LAT_SEC'] = '-38.529326'
     df.loc[df['DISTRITO'].isin(['repocura']), 'LON_SEC'] = '-72.957807'
     df.loc[df['DISTRITO'].isin(['carirriñe']), 'LAT_SEC'] = '-38.601780'
@@ -1028,40 +968,29 @@ def normaliza_direcc(df):
     df.loc[df['DISTRITO'].isin(['cholchol']), 'LON_SEC'] = '-72.838224'
 
     df.drop(columns=['DIRECCION'], errors='ignore', inplace=True)
-
+    
     return df
-
-
 
 @st.cache_resource
 def load_logo(path):
-    return Image.open(path)
+    try:
+        return Image.open(path)
+    except:
+        return None
 
 def footer():
     with st.container():
         col1, col2, col3, col4 = st.columns([3,1,5,1])
         with col2:
-            logo = load_logo("logo_alain.png")
-            st.image(logo, width=150)
+            try:
+                logo = load_logo("logo_alain.png")
+                if logo: st.image(logo, width=150)
+            except: pass
         with col3:
             st.markdown("""
                 <div style='text-align: left; color: #888888; font-size: 20px; padding-bottom: 20px;'>
                     💼 Aplicación desarrollada por <strong>Alain Antinao Sepúlveda</strong> <br>
                     📧 Contacto: <a href="mailto:alain.antinao.s@gmail.com" style="color: #4A90E2;">alain.antinao.s@gmail.com</a> <br>
-                    🌐 Más información en: <a href="https://alain-antinao-s.notion.site/Alain-C-sar-Antinao-Sep-lveda-1d20a081d9a980ca9d43e283a278053e    " target="_blank" style="color: #4A90E2;">Mi página personal</a>
+                    🌐 Más información en: <a href="https://alain-antinao-s.notion.site/Alain-C-sar-Antinao-Sep-lveda-1d20a081d9a980ca9d43e283a278053e" target="_blank" style="color: #4A90E2;">Mi página personal</a>
                 </div>
             """, unsafe_allow_html=True)
-
-        # --- Verificación adicional para scatter_mapbox (si aplica) ---
-        # Este bloque es solo si en el footer() original se usaba scatter_mapbox.
-        # Dado que no lo veo en tu código original de footer(), lo comento.
-        # Si lo usas, asegúrate de tener datos válidos antes de llamarlo.
-        # with col1: # O cualquier contenedor donde vaya el mapa
-        #     # Asegúrate de que df_map_filtered tenga datos y columnas válidas
-        #     # y que las columnas 'LAT_CENTRO', 'LONG_CENTRO', 'RUT' no contengan ceros o NaN inválidos
-        #     # para el tamaño 'size'.
-        #     # df_map_filtered = ... (tu filtrado aquí)
-        #     # if not df_map_filtered.empty and (df_map_filtered['RUT'] > 0).any():
-        #     #     fig_map = px.scatter_mapbox(df_map_filtered, lat='LAT_CENTRO', lon='LONG_CENTRO', size='RUT', ...)
-        #     #     st.plotly_chart(fig_map, use_container_width=True)
-        #     pass # Remover si no se usa scatter_mapbox en el footer

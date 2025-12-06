@@ -1,4 +1,5 @@
 import streamlit as st
+import gc # Importante para liberar memoria al navegar
 from servidor_fb import *
 from analisis_func import *
 
@@ -22,13 +23,14 @@ html, body, .stApp {
     padding: 0;
 }
 
-/* --- TÍTULO --- */
+/* --- TÍTULO LOGIN --- */
 .title {
     font-size: 28px;
     font-weight: bold;
     color: #003366;
     margin-top: 10px;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
 /* --- INPUTS --- */
@@ -52,6 +54,7 @@ html, body, .stApp {
     font-size: 15px;
     border: none;
     cursor: pointer;
+    width: 100%; /* Botón ancho completo en login */
 }
 .stButton > button:hover {
     background-color: #002244 !important;
@@ -82,10 +85,9 @@ label {
 </style>
 """, unsafe_allow_html=True)
 
-
-
 # ---------- Verificación de login con base de datos ----------
 def verificar_login(usuario, password):
+    # Nota: Asegúrate que leer_registro maneje excepciones si falla la conexión
     data_login = leer_registro('login')
     if data_login:
         for key, data in data_login.items():
@@ -97,70 +99,99 @@ def verificar_login(usuario, password):
 
 # ---------- Página de login ----------
 def pagina_login():
-    with st.container():
-        with st.form("form_login"):
-            st.markdown('<div class="login-container">', unsafe_allow_html=True)
-
-            # Logo
-            st.image("logo_alain.png", width=100)
+    # Centrado usando columnas
+    col_l, col_c, col_r = st.columns([1, 1, 1]) 
+    
+    with col_c: # Usamos la columna central
+        with st.container(border=True):
+            # Logo centrado
+            col_img1, col_img2, col_img3 = st.columns([1,2,1])
+            with col_img2:
+                try:
+                    st.image("logo_alain.png", use_container_width=True)
+                except:
+                    st.warning("Logo no encontrado")
 
             st.markdown('<div class="title">Iniciar Sesión</div>', unsafe_allow_html=True)
-            usuario_input = st.text_input("Nombre de usuario", max_chars=30)
-            password_input = st.text_input("Contraseña", type="password")
-            submit_button = st.form_submit_button("Ingresar")
 
-            st.markdown('</div>', unsafe_allow_html=True)
+            with st.form("form_login"):
+                usuario_input = st.text_input("Nombre de usuario", max_chars=30)
+                password_input = st.text_input("Contraseña", type="password")
+                
+                # Espacio
+                st.write("")
+                submit_button = st.form_submit_button("Ingresar")
 
-            if submit_button:
-                if verificar_login(usuario_input, password_input):
-                    st.session_state["logged_in"] = True
-                    st.success("¡Inicio de sesión exitoso!")
-                    st.rerun()
-                else:
-                    st.error("Usuario o contraseña incorrectos. Intenta nuevamente.")
+                if submit_button:
+                    if verificar_login(usuario_input, password_input):
+                        st.session_state["logged_in"] = True
+                        st.success("¡Inicio de sesión exitoso!")
+                        st.rerun()
+                    else:
+                        st.error("Credenciales incorrectas.")
 
-    # Enlace de contacto
-    st.markdown("""
-    <div class="contact-link">
-        ¿Tienes problemas para iniciar sesión? <br>
-        <a href="https://alain-antinao-s.notion.site/Alain-C-sar-Antinao-Sep-lveda-1d20a081d9a980ca9d43e283a278053e?pvs=74" target="_blank">
-        Contacta al administrador</a>
-    </div>
-    """, unsafe_allow_html=True)
+            # Enlace de contacto fuera del form
+            st.markdown("""
+            <div class="contact-link">
+                ¿Tienes problemas? <br>
+                <a href="https://alain-antinao-s.notion.site/Alain-C-sar-Antinao-Sep-lveda-1d20a081d9a980ca9d43e283a278053e?pvs=74" target="_blank">
+                Contacta al administrador</a>
+            </div>
+            """, unsafe_allow_html=True)
 
 # ---------- Lógica principal ----------
 if not st.session_state["logged_in"]:
     pagina_login()
 else:
+    # ------------------ BARRA LATERAL (LOGOUT) -------------------
+    with st.sidebar:
+        st.markdown(f"👤 **Usuario:** {st.session_state['usuario']}")
+        st.markdown(f"🔑 **Rol:** {st.session_state['rol']}")
+        st.divider()
+        if st.button("Cerrar Sesión"):
+            st.session_state["logged_in"] = False
+            st.session_state["usuario"] = ""
+            st.session_state["rol"] = ""
+            st.rerun()
 
     # ------------------ ENCABEZADO -------------------
     with st.container(border=True):
         col1, col2, col3 = st.columns([1, 5, 1])
         with col1:
-            st.image("logo_data_s.png", width=90)
+            try:
+                st.image("logo_data_s.png", width=90)
+            except:
+                pass
         with col2:
             st.markdown("<h1 style='margin: 0; color: #0072B2;text-align: center ;'>Análisis de Datos Salud</h1>", unsafe_allow_html=True)
         with col3:
-            st.image("logo_alain.png", width=120)
-
+            try:
+                st.image("logo_alain.png", width=120)
+            except:
+                pass
 
     # ------------------ DEFINICIÓN DE PÁGINAS -------------------
     pages = {
-        '📊Análisis y estadística': [
-            st.Page("analisis_agenda.py", title="-🖱️Análisis Agenda Médica"),
-            st.Page("analisis_percapita.py", title="-📈Análisis Percápita")
+        '📊 Análisis y estadística': [
+            st.Page("analisis_agenda.py", title="🖱️ Análisis Agenda Médica"),
+            st.Page("analisis_percapita.py", title="📈 Análisis Percápita")
         ],
-        '🩺Categorización Diagnóstico': [
-            st.Page("categorizacion_ges.py", title="-🏥Preclasificador GES")
+        '🩺 Categorización Diagnóstico': [
+            st.Page("categorizacion_ges.py", title="🏥 Preclasificador GES")
         ],
-        '🌍Sectorización': [
-           st.Page("sub_ut2.py", title="-👥Identificación usuarios"),
+        '🌍 Sectorización': [
+           st.Page("sub_ut2.py", title="👥 Identificación usuarios"),
         ],
-        '🛠️Utilidades': [
-            st.Page("sub_ut1.py", title="-🖇️Combinador de documentos"),
+        '🛠️ Utilidades': [
+            st.Page("sub_ut1.py", title="🖇️ Combinador de documentos"),
         ]
     }
 
-    # ------------------ NAVEGACIÓN -------------------
+    # ------------------ NAVEGACIÓN Y MEMORIA -------------------
+    
+    # 1. Limpieza preventiva de memoria antes de cargar la página
+    gc.collect()
+    
+    # 2. Ejecución de navegación
     page = st.navigation(pages)
     page.run()
