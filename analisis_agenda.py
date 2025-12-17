@@ -5,30 +5,97 @@ from datetime import datetime
 import numpy as np
 import time
 import io
-import gc  # <--- IMPORTANTE: Recolector de basura para liberar RAM
-from class_ges import *
-from analisis_func import *
+import gc   # <--- IMPORTANTE: Recolector de basura para liberar RAM
+import warnings
+
+# --- CONFIGURACIÓN ---
+# Silenciar advertencias de Pandas para limpiar la consola
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
+# --- IMPORTACIONES LOCALES ---
+try:
+    from class_ges import *
+    from analisis_func import *
+except ImportError:
+    pass # Si no están, el código intentará seguir, pero algunas funciones de carga fallarán.
+
 import plotly.express as px
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
 
-# --- FUNCIÓN DE OPTIMIZACIÓN DE MEMORIA (La clave para que no falle) ---
+# --- 1. MEJORA: FUNCIÓN DE OPTIMIZACIÓN DE MEMORIA ROBUSTA ---
 def optimizar_dataframe(df):
     """
-    Reduce el peso del DataFrame en RAM convirtiendo texto a categorías
-    y ajustando tipos numéricos.
+    1. Rellena nulos con 'SIN DATOS' en columnas de texto (evita error de categorías).
+    2. Convierte a 'category' para ahorrar RAM.
     """
     for col in df.columns:
-        # Convertir objetos (strings) a categorías si tienen pocos valores únicos
+        # Detectar columnas de tipo objeto (texto)
         if df[col].dtype == 'object':
+            # PASO 1: Rellenar Nulos ANTES de convertir.
+            df[col] = df[col].fillna('SIN DATOS')
+            
+            # Cálculo para decidir si vale la pena usar categorías
             num_unique_values = len(df[col].unique())
             num_total_values = len(df[col])
+            
             if num_total_values > 0:
                 if num_unique_values / num_total_values < 0.5:
+                    # PASO 2: Convertir a categoría (ahora es seguro)
                     df[col] = df[col].astype('category')
+                    
     return df
 
-#-------------------ENCABEZADO----------------------------------
+# --- 2. MEJORA: FUNCIÓN DE NORMALIZACIÓN PARA GRÁFICOS ---
+def normalizar_datos_visualizacion(df):
+    """
+    Normaliza Géneros y crea la lógica correcta de NSP vs ASISTIÓ.
+    """
+    df_viz = df.copy()
+    
+    # A) NORMALIZACIÓN DE GÉNERO
+    if 'GENERO' in df_viz.columns:
+        df_viz['GENERO'] = df_viz['GENERO'].astype(str).str.upper().str.strip()
+        mapa_genero = {
+            'M': 'MASCULINO', 'HOMBRE': 'MASCULINO',
+            'F': 'FEMENINO', 'MUJER': 'FEMENINO', 
+            'D': 'OTRO', 'INDETERMINADO': 'OTRO', 'DESCONOCIDO': 'OTRO',
+            'I': 'OTRO', 'INTERSEXUAL': 'OTRO', 'INTERSEX': 'OTRO',
+            'SIN DATOS': 'OTRO', 'NAN': 'OTRO'
+        }
+        df_viz['GENERO'] = df_viz['GENERO'].replace(mapa_genero)
+        # Aseguramos que cualquier cosa rara vaya a OTRO
+        df_viz.loc[~df_viz['GENERO'].isin(['MASCULINO', 'FEMENINO']), 'GENERO'] = 'OTRO'
+
+    # B) LÓGICA DE AUSENTISMO (NSP)
+    if 'ESTADO ATENCION' in df_viz.columns:
+        estado_col = df_viz['ESTADO ATENCION'].astype(str).str.upper().str.strip()
+        
+        # Palabras que indican que FALTÓ
+        palabras_nsp = ['NO SE PRESENTO', 'NO SE ATENDIO', 'NSP', 'PACIENTE NO ASISTE', 'AUSENTE']
+        # Palabras que indican que la hora NO EXISTE (anulada)
+        palabras_excluir = ['ELIMINADO', 'ANULADO', 'BORRADO', 'SIN DATOS', 'VACIO']
+
+        cond_nsp = estado_col.isin(palabras_nsp)
+        cond_excluir = estado_col.isin(palabras_excluir)
+        
+        opciones = [
+            (cond_nsp, 'NSP'),
+            (cond_excluir, 'IGNORAR')
+        ]
+        
+        # Si no es NSP ni IGNORAR, asumimos que ASISTIÓ
+        df_viz['ESTADO_SIMPLIFICADO'] = np.select(
+            [c for c, v in opciones], 
+            [v for c, v in opciones], 
+            default='ASISTIÓ'
+        )
+    else:
+        df_viz['ESTADO_SIMPLIFICADO'] = 'IGNORAR'
+    
+    return df_viz
+
+#-------------------ENCABEZADO ORIGINAL----------------------------------
 
 st.info("""
         **Agenda Médica 🩺**
@@ -72,7 +139,7 @@ with col5:
                 # Procesar CSV
                 df = proc_csv(archivo)
                 
-                # 2. OPTIMIZAR AL INSTANTE (Esto evita el ArrayMemoryError)
+                # 2. OPTIMIZAR AL INSTANTE (Función corregida)
                 df = optimizar_dataframe(df)
                 
                 st.session_state.lista_dfs.append(df)
@@ -88,7 +155,7 @@ with col5:
         st.success("Todos los archivos han sido procesados ✅")
 
 
-# ------------------ PROCESAMIENTO Y UNIÓN CON REPORTE PERCÁPITA -------------------
+# ------------------ PROCESAMIENTO Y UNIÓN -------------------
 if st.session_state.lista_dfs:
 
     try:
@@ -98,6 +165,14 @@ if st.session_state.lista_dfs:
         # 4. CRÍTICO: Vaciar la lista pesada INMEDIATAMENTE después de unir
         st.session_state.lista_dfs = [] 
         gc.collect()
+
+        # --- 3. MEJORA: ELIMINAR DUPLICADOS ---
+        filas_antes = len(df_con)
+        df_con = df_con.drop_duplicates()
+        filas_borradas = filas_antes - len(df_con)
+        if filas_borradas > 0:
+            st.toast(f"Se eliminaron {filas_borradas} registros duplicados.", icon="♻️")
+        # --------------------------------------
 
         df_con = normaliza_direcc(df_con)
         
@@ -130,8 +205,11 @@ if st.session_state.lista_dfs:
 # --- VISUALIZACIÓN ---
 if not st.session_state.df_agenda.empty:
     
-    # Usamos una variable local para no escribir st.session_state.df_agenda todo el tiempo
-    df_con_clean = st.session_state.df_agenda
+    # --- 4. APLICAMOS LA NORMALIZACIÓN DE DATOS AQUÍ ---
+    # Usamos una variable local 'df_con_clean' que ahora tiene NSP y Género arreglado
+    df_raw = st.session_state.df_agenda
+    df_con_clean = normalizar_datos_visualizacion(df_raw)
+    # ---------------------------------------------------
 
     tab1,tab2 = st.tabs(['Información del documento ℹ️','Análisis de datos 📈'])
 
@@ -241,11 +319,12 @@ if not st.session_state.df_agenda.empty:
             if 'SIN DATOS' in df_con_ops: df_con_ops.remove('SIN DATOS')
             df_con_ops.append('TODOS')
 
-            df_con_est = df_con_clean['ACCION A TOMAR'].unique().tolist()
-            if 'SIN DATOS' in df_con_est: df_con_est.remove('SIN DATOS')
+            # --- MEJORA: USAR LA COLUMNA DE ESTADO SIMPLIFICADO PARA FILTRO ---
+            # Filtramos 'IGNORAR' (anulados) de la lista de opciones
+            df_con_est = [x for x in df_con_clean['ESTADO_SIMPLIFICADO'].unique().tolist() if x != 'IGNORAR']
             df_con_est.append('TODOS')
             
-            sel_est = st.selectbox('Seleccione estado',df_con_est,key='sel_est',index=len(df_con_est)-1)
+            sel_est = st.selectbox('Seleccione estado (Simplificado)', df_con_est, key='sel_est', index=len(df_con_est)-1)
             sel_et = st.selectbox('Seleccione la etnia',df_con_ops,key='sel_et',index=len(df_con_ops)-1)
             
         with sect:
@@ -298,9 +377,9 @@ if not st.session_state.df_agenda.empty:
         if sel_com != 'TODOS':
             cond_base = cond_base & (df_con_clean['COMUNIDAD'] == sel_com)
 
-        # Agregar condición para estado si no es "TODOS"
+        # --- MEJORA: CONDICIÓN ESTADO USANDO ESTADO_SIMPLIFICADO ---
         if sel_est != 'TODOS':
-            cond_base = cond_base & (df_con_clean['ACCION A TOMAR'] == sel_est)
+            cond_base = cond_base & (df_con_clean['ESTADO_SIMPLIFICADO'] == sel_est)
 
         # Filtros combinados para género y clase etaria (igual que antes)
         if ops_gen == 'TODOS' and ops_et != 'TODOS':
@@ -346,7 +425,10 @@ if not st.session_state.df_agenda.empty:
             with graf1:
                 df_rut = df_filtered.groupby(['RANGO_ETARIO','GENERO'])['RUT'].nunique().reset_index()
                 df_rut = df_rut[df_rut['RANGO_ETARIO'] != 'SIN DATOS']
-                fig = px.funnel(df_rut, x = 'RUT', y = 'RANGO_ETARIO', color = 'GENERO',title='Atenciones por Rango etario',labels={'RUT':'Total Atenciones','RANGO_ETARIO':'Distribución de edades'})
+                # MEJORA VISUAL: Colores consistentes
+                fig = px.funnel(df_rut, x = 'RUT', y = 'RANGO_ETARIO', color = 'GENERO',
+                                title='Atenciones por Rango etario',labels={'RUT':'Total Atenciones','RANGO_ETARIO':'Distribución de edades'},
+                                color_discrete_map={'MASCULINO': '#636EFA', 'FEMENINO': '#EF553B', 'OTRO': '#00CC96'})
                 st.plotly_chart(fig, use_container_width=True)
             
             with graf2:
@@ -419,15 +501,24 @@ if not st.session_state.df_agenda.empty:
                 st.plotly_chart(fig, use_container_width=True)
 
             with graf5:
+                # Ordenar cronológicamente si es posible
                 df_rut = (
                     df_filtered.groupby(["FECHA ASIGNADA",'GENERO'])['RUT'].count().reset_index()
                 )
+                # Intentamos convertir fecha para ordenar
+                try:
+                    df_rut['FECHA ASIGNADA'] = pd.to_datetime(df_rut['FECHA ASIGNADA'], dayfirst=True)
+                    df_rut = df_rut.sort_values('FECHA ASIGNADA')
+                except:
+                    pass
+
                 fig = px.histogram(df_rut,x='FECHA ASIGNADA',y='RUT',color='GENERO',
-                                    title='Distribución del n° de atenciónes por periodo',labels={'FECHA ASIGNADA':'Periodo','RUT':'Total atenciones'})
+                                   title='Distribución del n° de atenciónes por periodo',labels={'FECHA ASIGNADA':'Periodo','RUT':'Total atenciones'},
+                                   color_discrete_map={'MASCULINO': '#636EFA', 'FEMENINO': '#EF553B', 'OTRO': '#00CC96'})
                 st.plotly_chart(fig,use_container_width=True)
             
 
-            # --- CORRECCIÓN ERROR STYLING ---
+            # --- MEJORA: TABLA SIN ERROR DE MATPLOTLIB ---
             df_etnia = (
                 df_filtered.groupby(['ETNIA PERCEPCION', 'POLICLINICO'])['RUT']
                 .nunique()
@@ -449,14 +540,9 @@ if not st.session_state.df_agenda.empty:
 
                 tabla_etnia = tabla_etnia[tabla_etnia['ETNIA PERCEPCION'] != 'SIN DATOS']
                 
-                # Identificar columnas numéricas para aplicar el highlight solo a ellas
-                cols_numericas = tabla_etnia.select_dtypes(include=['number']).columns
-                
-                # Aplicar estilo
-                styled_table = tabla_etnia.style.highlight_max(subset=cols_numericas, axis=0, color='lightcoral')
-
                 st.markdown("#### Atenciones de acuerdo a la etnia del usuario" )
-                st.dataframe(styled_table, hide_index=True, use_container_width=True)
+                # Se eliminó el .style.background_gradient para evitar el error
+                st.dataframe(tabla_etnia, hide_index=True, use_container_width=True)
 
 
             graf6,graf7,graf8 = st.columns(3)
@@ -477,27 +563,45 @@ if not st.session_state.df_agenda.empty:
                 #Escolaridad
                 df_esc = df_filtered.groupby(['ESCOLARIDAD','GENERO'])['RUT'].nunique().reset_index()
                 df_esc = df_esc[df_esc['ESCOLARIDAD'] != 'SIN DATOS']
-                fig = px.funnel(df_esc,x='ESCOLARIDAD',y='RUT',color='GENERO',title='Distribución según nivel de escolaridad')
+                fig = px.funnel(df_esc,x='ESCOLARIDAD',y='RUT',color='GENERO',title='Distribución según nivel de escolaridad',
+                                color_discrete_map={'MASCULINO': '#636EFA', 'FEMENINO': '#EF553B', 'OTRO': '#00CC96'})
                 st.plotly_chart(fig,use_container_width=True)
 
+            # --- MEJORA: GRÁFICOS DE AUSENTISMO CON LÓGICA CORRECTA ---
             graf9,graf10 = st.columns([3,5])
 
             with graf9:
-                #Porcentaje de ausentismo
-                df_aus = df_filtered.groupby('ESTADO ATENCION')['RUT'].count().reset_index()
-                df_aus = df_aus[df_aus['ESTADO ATENCION'] != 'SIN DATOS']
+                # Porcentaje de ausentismo (NSP vs ASISTIÓ)
+                # Filtramos solo lo válido (quitamos anulados)
+                df_aus = df_filtered[df_filtered['ESTADO_SIMPLIFICADO'].isin(['NSP', 'ASISTIÓ'])]
+                df_aus_agg = df_aus.groupby('ESTADO_SIMPLIFICADO')['RUT'].count().reset_index()
 
-                fig = px.pie(df_aus,values='RUT',names='ESTADO ATENCION',hole=0.5,title='% de ausentismo en las atenciones')
+                fig = px.pie(df_aus_agg, values='RUT', names='ESTADO_SIMPLIFICADO', hole=0.5,
+                             title='% de ausentismo Real (NSP)',
+                             color='ESTADO_SIMPLIFICADO',
+                             color_discrete_map={'NSP': '#FF4136', 'ASISTIÓ': '#2ECC40'})
                 st.plotly_chart(fig,use_container_width=True)
             
             with graf10:
-                #Peridos de ausentismo
-                df_aus = df_filtered.groupby(['ESTADO ATENCION','FECHA EJECUTADA','GENERO'])['RUT'].count().reset_index()
-                df_aus = df_aus[(df_aus['ESTADO ATENCION'] != 'SIN DATOS') & (df_aus['ESTADO ATENCION'] == 'NO SE PRESENTO') & (df_aus['FECHA EJECUTADA'] != 'SIN DATOS')]
+                # Periodos de ausentismo (Usando el ESTADO_SIMPLIFICADO == NSP)
+                df_aus_time = df_filtered[df_filtered['ESTADO_SIMPLIFICADO'] == 'NSP']
+                
+                if not df_aus_time.empty:
+                    df_aus_time_agg = df_aus_time.groupby(['FECHA ASIGNADA','GENERO'])['RUT'].count().reset_index()
+                    
+                    try:
+                        df_aus_time_agg['FECHA ASIGNADA'] = pd.to_datetime(df_aus_time_agg['FECHA ASIGNADA'], dayfirst=True)
+                        df_aus_time_agg = df_aus_time_agg.sort_values('FECHA ASIGNADA')
+                    except:
+                        pass
 
-                fig = px.histogram(df_aus,x='FECHA EJECUTADA',y='RUT',color='GENERO',title='Distribución temporal de las ausencias',
-                                    labels = {'FECHA EJECUTADA':'Periodo de ejecución','RUT':'Ausentismos'})
-                st.plotly_chart(fig,use_container_width=True)
+                    fig = px.bar(df_aus_time_agg, x='FECHA ASIGNADA', y='RUT', color='GENERO',
+                                 title='Distribución temporal de las ausencias',
+                                 labels = {'FECHA ASIGNADA':'Periodo de ejecución','RUT':'Ausentismos'},
+                                 color_discrete_map={'MASCULINO': '#636EFA', 'FEMENINO': '#EF553B', 'OTRO': '#00CC96'})
+                    st.plotly_chart(fig,use_container_width=True)
+                else:
+                    st.success("No hay NSP registrados.")
         
         else:
             st.warning("No hay datos para los filtros seleccionados.")
