@@ -24,7 +24,7 @@ def cargar_datos_cache_v2(archivos_cargados):
 # --- FUNCIÓN AUXILIAR PARA CONVERTIR DF A CSV ---
 @st.cache_data
 def convert_df_to_csv(_df):
-    return _df.to_csv(index=False).encode('utf-8-sig') # utf-8-sig para que Excel abra bien las tildes
+    return _df.to_csv(index=False, sep=';').encode('utf-8-sig') # utf-8-sig y sep=';' para que Excel abra bien las tildes y columnas
 
 # --- ENCABEZADO ---
 st.info(
