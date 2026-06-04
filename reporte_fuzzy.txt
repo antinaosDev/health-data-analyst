@@ -1,0 +1,23 @@
+=== PRUEBA DE COINCIDENCIAS DIFUSA (difflib) ===
+Casos No Identificados: 7
+
+- 'Nahuelman' (NORM: NAHUELMAN)
+  Fuzzy Match en Distrito: 'NAHUEL' -> Distrito: 'repocura'
+
+- 'Quintul V. De Alcaman Cayul' (NORM: QUINTUL V DE ALCAMAN CAYUL)
+  Fuzzy Match en Distrito: 'QUINTUL V. DE ALCAMAN CAYUL' -> Distrito: 'carirriñe'
+
+- 'Flora Chiguaillan V. De Lienqueo' (NORM: FLORA CHIGUAILLAN V DE LIENQUEO)
+  Fuzzy Match en Distrito: 'FLORA CHIGUAILLAN V. DE LIENQUEO' -> Distrito: 'carirriñe'
+
+- 'Foyel V. De José Ñanculef' (NORM: FOYEL V DE JOSE NANCULEF)
+  Fuzzy Match en Distrito: 'FOYEL V. DE JOSE NANCULEF' -> Distrito: 'carirriñe'
+
+- 'Quintul V. De Alcaman Cayul' (NORM: QUINTUL V DE ALCAMAN CAYUL)
+  Fuzzy Match en Distrito: 'QUINTUL V. DE ALCAMAN CAYUL' -> Distrito: 'carirriñe'
+
+- 'Flora Chiguaillan V. De Lienqueo' (NORM: FLORA CHIGUAILLAN V DE LIENQUEO)
+  Fuzzy Match en Distrito: 'FLORA CHIGUAILLAN V. DE LIENQUEO' -> Distrito: 'carirriñe'
+
+- 'Foyel V. De José Ñanculef' (NORM: FOYEL V DE JOSE NANCULEF)
+  Fuzzy Match en Distrito: 'FOYEL V. DE JOSE NANCULEF' -> Distrito: 'carirriñe'

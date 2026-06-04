@@ -1,0 +1,95 @@
+=== ANALISIS DE NUEVAS COMUNIDADES ===
+
+Total provistas: 86
+Presentes/Similares: 59
+Ausentes (Sin Mapeo): 27
+
+--- AUSENTES (Necesitan Distrito y Centro) ---
+- Comunidad Rayén Lafquén
+- Comunidad Fermín Huenchual
+- Comunidad Ramón Painemal
+- Comunidad Tren Tren
+- Comunidad Juan Curral
+- Comunidad Manuel Huenchunao
+- Comunidad Juan Ancalle
+- Comunidad Juan Colipí
+- Comunidad Huenul Llancán
+- Comunidad Domín Colín
+- Comunidad Juan Mauricio Huaiquián
+- Comunidad Levio Huenchual
+- Los Aromos
+- Comunidad Pailacura Lincomil
+- Comunidad Mateo Lleupi
+- Comunidad Ramón Antilaf
+- Comunidad Cacique Lienqueo
+- Comunidad Pascual Painemilla Dos
+- La Dehesa
+- Comunidad Pedro Marín Calfucura
+- Comunidad Agustín Painaqueo
+- Comunidad Alberto Véjar
+- Comunidad Venancio Coñoepán
+- Comunidad Santos Marillán
+- Comunidad Viuda de José Ñanculef
+- Comunidad Juan Antinao
+- Comunidad Huenchul Alcamán Colipí
+
+--- PRESENTES ---
+- Cholchol -> Coincide con dicc: 'CHOLCHOL'
+- Comunidad La Foresta I -> Coincide con dicc: 'LA FORESTA'
+- Comunidad La Foresta II -> Coincide con dicc: 'LA FORESTA'
+- Comunidad Pedro Cayuqueo -> Coincide con dicc: 'PEDRO CAY'
+- Comunidad Francisco Maliqueo -> Coincide con dicc: 'FRANCISCO MAL'
+- Comunidad José Chanqueo -> Coincide con dicc: 'JOSÉ CHANQUEO'
+- Comunidad Juan de Dios Lleuvul -> Coincide con dicc: 'JUAN DE DIOS LLEU'
+- Comunidad Dionisio Paillao -> Coincide con dicc: 'DIONISIO PAILL'
+- Comunidad Antonio Painemal -> Coincide con dicc: 'ANTONIO PAINEMAL'
+- Comunidad Rosario Morales -> Coincide con dicc: 'ROSARIO MORALES'
+- Comunidad Domingo Coñoepán -> Coincide con dicc: 'DOMINGO COÑO'
+- Comunidad Manuel Cayunao -> Coincide con dicc: 'MANUEL CAY'
+- Comunidad Miguel Lemunao -> Coincide con dicc: 'MIGUEL LEMU'
+- Comunidad Juan Huaiquil Curillán -> Coincide con dicc: 'JUAN HUAI'
+- Comunidad Juan Melinao -> Coincide con dicc: 'JUAN MELI'
+- Comunidad Federico Antinao -> Coincide con dicc: 'FEDERICO ANTI'
+- Comunidad Agustín Chihuaicura -> Coincide con dicc: 'CHIHUAI'
+- Comunidad Juan Levio -> Coincide con dicc: 'JUAN LEVIO'
+- Comunidad Juan Curihual -> Coincide con dicc: 'JUAN CURIH'
+- Comunidad Juan Millapán -> Coincide con dicc: 'JUAN MILLA'
+- Rinconada -> Coincide con dicc: 'RINCON'
+- Notromahuida -> Coincide con dicc: 'NOTROMAHUIDA'
+- Comunidad Calvunao Caniupán -> Coincide con dicc: 'CALVUNAO CANIU'
+- Renaco -> Coincide con dicc: 'RENACO'
+- Villa El Estero -> Coincide con dicc: 'VILLA'
+- Comunidad José Calfulaf -> Coincide con dicc: 'CALFUL'
+- Comunidad Abelino Huinca -> Coincide con dicc: 'ABELINO HUINC'
+- Comunidad Juan Mulato -> Coincide con dicc: 'JUAN MULATO'
+- Comunidad José Traipe -> Coincide con dicc: 'JOSÉ TRAIPE'
+- Comunidad Carilaf Chifca -> Coincide con dicc: 'CARILAF CHIFCA'
+- Comunidad José Miguel Huaiquean -> Coincide con dicc: 'JOSÉ MIGUEL HUAIQUEAN'
+- Comunidad Domingo Chañillao -> Coincide con dicc: 'DOMINGO CHAÑ'
+- Comunidad Gabriel Chicahual -> Coincide con dicc: 'GABRIEL CHICA'
+- Comunidad Juan Calbuqueo -> Coincide con dicc: 'JUAN CALBU'
+- Comunidad Pedro Curihuinca -> Coincide con dicc: 'PEDRO CURI'
+- Comunidad José Soto Neilaf -> Coincide con dicc: 'SOTO NEI'
+- Comunidad Juan Santiago -> Coincide con dicc: 'JUAN SANT'
+- La Foresta -> Coincide con dicc: 'LA FORESTA'
+- Comunidad Rincón Rucapangue -> Coincide con dicc: 'RUCA'
+- Comunidad La Foresta III -> Coincide con dicc: 'LA FORESTA'
+- Repocura -> Coincide con dicc: 'REPOCURA DEUCO'
+- Comunidad Juan Huilipán -> Coincide con dicc: 'HUI'
+- Comunidad Pedro Huircán -> Coincide con dicc: 'HUI'
+- Pitraco -> Coincide con dicc: 'PITRACO BANDERA'
+- Comunidad Juan Nahuelpi -> Coincide con dicc: 'JUAN NAHUELPI'
+- Comunidad Anselmo Quintriqueo -> Coincide con dicc: 'ANSELMO QUINTRI'
+- Comunidad José Epulef -> Coincide con dicc: 'JOSÉ EPULEF'
+- Comunidad Hueichao Millán -> Coincide con dicc: 'HUEICHAO'
+- Comunidad Juan Cayul -> Coincide con dicc: 'JUAN CAYUL'
+- Comunidad José Curiqueo -> Coincide con dicc: 'JOSÉ CURIQUEO'
+- Malalche Rincón -> Coincide con dicc: 'MALALCHE'
+- Comunidad Quintul Viuda de Alcamán -> Coincide con dicc: 'QUINTUL'
+- Comunidad Mulato Huenulef -> Coincide con dicc: 'MULATO HUENULEF'
+- Comunidad Antonio Huichapán -> Coincide con dicc: 'HUI'
+- Comunidad Pablo Ignacio Hueichapán -> Coincide con dicc: 'IGNACIO'
+- Comunidad Flora Chihuaillán -> Coincide con dicc: 'CHIHUAI'
+- Malalche Alto -> Coincide con dicc: 'MALALCHE ALTO'
+- Huamaqui -> Coincide con dicc: 'HUAMAQUI'
+- Dollinco -> Coincide con dicc: 'DOLLINCO'

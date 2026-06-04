@@ -1,0 +1,21 @@
+=== FUNCIONES CON CACHE ===
+
+Funcion: proc_csv
+  Decorator: @st.cache_data(ttl=600)
+  Argumentos: archivo,sep=None
+
+Funcion: procesamiento_agenda
+  Decorator: @st.cache_data(ttl=600)
+  Argumentos: _lista_dfs
+
+Funcion: reporte_percapita
+  Decorator: @st.cache_data(ttl=600)
+  Argumentos: archivos
+
+Funcion: normaliza_direcc
+  Decorator: @st.cache_data(ttl=600)
+  Argumentos: df
+
+Funcion: load_logo
+  Decorator: @st.cache_resource
+  Argumentos: path

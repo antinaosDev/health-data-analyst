@@ -1,0 +1,32 @@
+--- Detalle de Clasificacion ---
+❌ FALLA: Ramon Ancamil | Distrito: carirriñe | Comunidad: Ramon Ancamil | Esperado: Cesfam Cholchol | Obtenido: PSR Malalche
+❌ FALLA: Domingo Colin | Distrito: repocura | Comunidad: Domingo Colin | Esperado: Cesfam Cholchol | Obtenido: PSR Malalche
+❌ FALLA: Guenul Llancal | Distrito: repocura | Comunidad: Guenul Llancal | Esperado: Cesfam Cholchol | Obtenido: PSR Malalche
+❌ FALLA: Juan Curigual | Distrito: repocura | Comunidad: Juan Curigual | Esperado: Cesfam Cholchol | Obtenido: PSR Malalche
+❌ FALLA: Juan Hulipan | Distrito: repocura | Comunidad: Juan Hulipan | Esperado: Cesfam Cholchol | Obtenido: PSR Huentelar
+❌ FALLA: Juan Lienan | Distrito: repocura | Comunidad: Juan Lienan | Esperado: Cesfam Cholchol | Obtenido: PSR Huentelar
+❌ FALLA: Juan Colipi Huechunao | Distrito: carirriñe | Comunidad: Juan Colipi Huechunao | Esperado: Cesfam Cholchol | Obtenido: PSR Malalche
+❌ FALLA: Ramon Painemal | Distrito: rapahue | Comunidad: Ramon Painemal | Esperado: Cesfam Cholchol | Obtenido: PSR Malalche
+❌ FALLA: Pedro Cayuqueo | Distrito: rapahue | Comunidad: Pedro Cayuqueo | Esperado: Cesfam Cholchol | Obtenido: PSR Malalche
+❌ FALLA: Avelino Huinca | Distrito: carirriñe | Comunidad: Avelino Huinca | Esperado: Cesfam Cholchol | Obtenido: PSR Malalche
+❌ FALLA: Pedro Curihuinca | Distrito: carirriñe | Comunidad: Pedro Curihuinca | Esperado: Cesfam Cholchol | Obtenido: PSR Malalche
+❌ FALLA: Juan Calbuqueo | Distrito: rapahue | Comunidad: Juan Calbuqueo | Esperado: Cesfam Cholchol | Obtenido: PSR Malalche
+❌ FALLA: RAYEN LAFKEN DE NEWENKO | Distrito: cholchol | Comunidad: Rayen Lafken De Newenko | Esperado: PSR Malalche | Obtenido: Cesfam Cholchol
+❌ FALLA: Nahuelman | Distrito: repocura | Comunidad: Nahuelman | Esperado: PSR Malalche | Obtenido: NO_ESPECIFICADO
+❌ FALLA: Antonio Painemal, Juan Painenao, Collio y otros | Distrito: cholchol | Comunidad: Antonio Painemal | Esperado: PSR Malalche | Obtenido: Cesfam Cholchol
+❌ FALLA: Quintul V. De Alcaman Cayul | Distrito: NO_ESPECIFICADO | Comunidad: Quintul V. De Alcaman Cayul | Esperado: PSR Malalche | Obtenido: NO_ESPECIFICADO
+❌ FALLA: Flora Chiguaillan V. De Lienqueo | Distrito: NO_ESPECIFICADO | Comunidad: NO_ESPECIFICADO | Esperado: PSR Malalche | Obtenido: NO_ESPECIFICADO
+❌ FALLA: Foyel V. De José Ñanculef | Distrito: NO_ESPECIFICADO | Comunidad: NO_ESPECIFICADO | Esperado: PSR Malalche | Obtenido: NO_ESPECIFICADO
+❌ FALLA: Juan Levio | Distrito: repocura | Comunidad: Juan Levio | Esperado: PSR Malalche | Obtenido: PSR Huentelar
+❌ FALLA: Antonio Cayul | Distrito: cholchol | Comunidad: Antonio Cayul | Esperado: PSR Malalche | Obtenido: Cesfam Cholchol
+❌ FALLA: Juan Antonio | Distrito: cholchol | Comunidad: Juan Antonio | Esperado: PSR Malalche | Obtenido: Cesfam Cholchol
+❌ FALLA: Antonio Painemal, Juan Painenao, Collio y otros | Distrito: cholchol | Comunidad: Antonio Painemal | Esperado: PSR Malalche | Obtenido: Cesfam Cholchol
+❌ FALLA: Ignacio Carrillo | Distrito: cholchol | Comunidad: Ignacio Carrillo | Esperado: PSR Malalche | Obtenido: Cesfam Cholchol
+❌ FALLA: Pablo Ignacio Guichapan | Distrito: cholchol | Comunidad: Pablo Ignacio Guichapan | Esperado: PSR Malalche | Obtenido: Cesfam Cholchol
+❌ FALLA: Antonio Bulnes Painemal | Distrito: cholchol | Comunidad: Antonio Bulnes Painemal | Esperado: PSR Malalche | Obtenido: Cesfam Cholchol
+❌ FALLA: Quintul V. De Alcaman Cayul | Distrito: NO_ESPECIFICADO | Comunidad: Quintul V. De Alcaman Cayul | Esperado: PSR Malalche | Obtenido: NO_ESPECIFICADO
+❌ FALLA: Flora Chiguaillan V. De Lienqueo | Distrito: NO_ESPECIFICADO | Comunidad: NO_ESPECIFICADO | Esperado: PSR Malalche | Obtenido: NO_ESPECIFICADO
+❌ FALLA: Foyel V. De José Ñanculef | Distrito: NO_ESPECIFICADO | Comunidad: NO_ESPECIFICADO | Esperado: PSR Malalche | Obtenido: NO_ESPECIFICADO
+❌ FALLA: Juan de Dios Huichaleo | Distrito: carirriñe | Comunidad: Juan de Dios Huichaleo | Esperado: PSR Huentelar | Obtenido: PSR Malalche
+
+Resumen: 114 Exitosos, 29 Fallas

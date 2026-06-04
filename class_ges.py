@@ -352,60 +352,49 @@ diccionario = {
 
 
 
-def clasificar_columna(df: pl.DataFrame, col_diag: str, diccionario: dict) -> pl.Expr:
-    expr = pl.lit("Sin Clasificar")
-    for categoria, valores in diccionario.items():
-        patron = "|".join(valores["PK"])  # unir keywords
-        patron_ci = f"(?i){patron}"  # insensible a mayúsculas
-        expr = pl.when(pl.col(col_diag).str.contains(patron_ci, literal=False)) \
-                 .then(pl.lit(categoria)) \
-                 .otherwise(expr)
-    return expr
-
-
-def aplicar_criterio_etario(df: pl.DataFrame, col_clas: str, diccionario: dict) -> pl.Expr:
-    """
-    Aplica criterio etario basado en el diccionario para la columna de clasificación.
-    """
-    expr = pl.lit("Sin Clasificar")
-    for categoria, valores in diccionario.items():
-        edad_min, edad_max = valores["emin"], valores["emax"]
-        expr = pl.when(
-            (pl.col(col_clas) == categoria) &
-            (pl.col("EDAD") >= edad_min) &
-            (pl.col("EDAD") <= edad_max)
-        ).then(pl.lit(categoria)) \
-         .when(pl.col(col_clas) == categoria) \
-         .then(pl.lit("Fuera de criterio etario")) \
-         .otherwise(expr)
-    return expr
-
-@st.cache_data(ttl=600)
-def cargar_archivo_class_ges_polars(df: pl.DataFrame, diccionario: dict) -> pl.DataFrame:
-    # Limpiar columnas de diagnóstico
+def cargar_archivo_class_ges_pandas(df: pd.DataFrame, diccionario: dict) -> pd.DataFrame:
+    # Hacemos una copia local de las columnas necesarias para trabajar de forma ligera
+    # para evitar duplicar las 70 columnas en la RAM!
+    df_temp = df[['EDAD', 'DIAGNOSTICO 1', 'DIAGNOSTICO 2', 'DIAGNOSTICO 3']].copy()
+    
+    # Rellenar nulos
     for i in range(1, 4):
-        df = df.with_columns(
-            pl.col(f"DIAGNOSTICO {i}").cast(pl.Utf8).str.strip_chars().alias(f"DIAGNOSTICO {i}")
-        )
+        df_temp[f"DIAGNOSTICO {i}"] = df_temp[f"DIAGNOSTICO {i}"].astype(str).str.strip().str.lower()
+        df_temp[f"FINAL_{i}"] = "Sin Clasificar"
 
-    # Clasificación preliminar y final por cada diagnóstico
+    # Clasificación y criterio etario en Pandas vectorizado
     for i in range(1, 4):
-        col_pre = f"PRE_{i}"
-        col_final = f"FINAL_{i}"
-        df = df.with_columns(clasificar_columna(df, f"DIAGNOSTICO {i}", diccionario).alias(col_pre))
-        df = df.with_columns(aplicar_criterio_etario(df, col_pre, diccionario).alias(col_final))
+        diag_col = f"DIAGNOSTICO {i}"
+        final_col = f"FINAL_{i}"
+        
+        # Para cada categoría
+        for categoria, valores in diccionario.items():
+            patron = "|".join([re.escape(f.lower()) for f in valores["PK"]])
+            edad_min, edad_max = valores["emin"], valores["emax"]
+            
+            # Encontrar coincidencia de palabra clave
+            mask_kw = df_temp[diag_col].str.contains(patron, regex=True, na=False)
+            
+            # Encontrar filas que cumplen criterio etario
+            mask_edad = (df_temp['EDAD'] >= edad_min) & (df_temp['EDAD'] <= edad_max)
+            
+            # Coincide y cumple edad -> Asignar categoría
+            df_temp.loc[mask_kw & mask_edad, final_col] = categoria
+            
+            # Coincide pero no cumple edad -> Fuera de criterio etario
+            mask_fuera = mask_kw & ~mask_edad & (df_temp[final_col] == "Sin Clasificar")
+            df_temp.loc[mask_fuera, final_col] = "Fuera de criterio etario"
 
-    # CAT_GES: primera coincidencia válida
-    df = df.with_columns(
-        pl.when(~pl.col("FINAL_1").is_in(["Sin Clasificar", "Fuera de criterio etario"]))
-          .then(pl.col("FINAL_1"))
-          .when(~pl.col("FINAL_2").is_in(["Sin Clasificar", "Fuera de criterio etario"]))
-          .then(pl.col("FINAL_2"))
-          .when(~pl.col("FINAL_3").is_in(["Sin Clasificar", "Fuera de criterio etario"]))
-          .then(pl.col("FINAL_3"))
-          .otherwise(pl.lit("Sin Clasificar"))
-          .alias("CAT_GES")
-    )
-    print(df)
-
+    # Determinar CAT_GES (primera coincidencia válida entre FINAL_1, FINAL_2, FINAL_3)
+    # Inicializar con Sin Clasificar
+    cat_ges = pd.Series("Sin Clasificar", index=df.index)
+    
+    # Ir de FINAL_3 a FINAL_1 (para que FINAL_1 tenga prioridad al sobreescribir)
+    for i in [3, 2, 1]:
+        final_col = f"FINAL_{i}"
+        mask_valid = ~df_temp[final_col].isin(["Sin Clasificar", "Fuera de criterio etario"])
+        cat_ges[mask_valid] = df_temp.loc[mask_valid, final_col]
+        
+    # Asignar al DataFrame original
+    df['CAT_GES'] = cat_ges
     return df

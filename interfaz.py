@@ -1,4 +1,6 @@
+import sys; sys.modules['orjson'] = None
 import streamlit as st
+
 import gc # Importante para liberar memoria al navegar
 from servidor_fb import *
 from analisis_func import *

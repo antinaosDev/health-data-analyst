@@ -48,7 +48,10 @@ with col5:
 
         for i, archivo in enumerate(archivos):
             df = proc_csv(archivo)
-            st.session_state.lista_dfs.append(df)
+            if df is not None:
+                st.session_state.lista_dfs.append(df)
+            else:
+                st.error(f"Error en archivo {i+1}: El archivo está vacío, no se pudo detectar la codificación o tiene un formato no válido.")
 
             my_bar.progress((i + 1) / total, text=f"{i + 1} de {total} archivos procesados")
             time.sleep(0.3)  # opcional

@@ -1,0 +1,392 @@
+Total registros nuevos: 143
+Elementos en sector_a_comunidad: 98
+Elementos en sector_a_distrito: 244
+
+--- ANALISIS ---
+
+Ubicaciones en TSV:
+FALTA MAPPED: Guinca Guenchuleo | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Ramon Ancamil | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Fermin Guenchual | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Dionisio Paillao | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Miguel Lemunao | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Benito Nain | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Juan Pedro Guilcan | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Domingo Colin | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Guenul Llancal | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Juan Curigual | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: José Loncomil | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Rosario Quezada | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Domingo Marillan | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Santos Marillan | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Jacinto Carrasco Lleuvul | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Juan Melinao | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Juan Guaiquil | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Manuel Cayunao | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Benancio Coñoepan | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Catrileo Lleubul | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Pascual Coloma y Tripailao | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Pedro Guilcan | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Manuel Hunchunao | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Juan Curall | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Domingo Coñoepan | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: José Manuel Guilcan | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Juan Hulipan | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Juan Lienan | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: Antonio Relmucao | Sector: Sol | Distrito: Cholchol | Centro: Cesfam Cholchol
+FALTA MAPPED: JOSÉ CHANQUEO | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Guinca Guenchuleo | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Ramon Painemal | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Pedro Cayuqueo | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Fermin Guenchual | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Dionisio Paillao | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Juan de Dios Lleuvul | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Francisco Curiqueo | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Calfulaf | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Mateo Yaupi | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Carilaf Chifca | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Ramon Antilaf | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: José Traipe | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Gabriel Chicahual | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: José Soto Neillai Nielaf | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: José Loncomil | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Domingo Chañillao | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Calvunao Cañiupan | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Pascual Coloma y Tripailao | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Paillacura Lincomil | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Juan Mulato | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: José Miguel Huaiquean | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Luciano Millanao | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Juan Calbuqueo | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Lorenzo Tranamil | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: Antonio Relmucao | Sector: Sol | Distrito: Tranahuillin | Centro: Cesfam Cholchol
+FALTA MAPPED: JOSÉ NINO Y OTRO | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: TRENG-TRENG | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Manuelhual | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Francisco Maliqueo | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Calvul Collio | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Nahuelman | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Ramon Painemal | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: MulatoChiguaihue | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Rosario Morales | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Ramon Ancamil | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Lorenzo Calfuqueo | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: José Niño | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Pedro Cayuqueo | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Curihual | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Juan Calbuqueo | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Liinqueo | Sector: Luna | Distrito: Rapahue | Centro: PSR Malalche
+FALTA MAPPED: Quilimanzano-SanJose | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Quintul V. De Alcaman Cayul | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Huenchul Ancaman Colipi | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Flora Chiguaillan V. De Lienqueo | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Foyel V. De José Ñanculef | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: José Curiqueo | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Juan Levio | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Lorenzo Cayul | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Juan Cayul | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Juana Cayul de Barra | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Mulato Huenulef | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Hueichao Millan | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Juan Curigual | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Guenul Llancal | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Domingo Colin | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Juan Mauricio Guaiquean | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Manuel Painenao | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: Levin Lemunao | Sector: Luna | Distrito: Repocura | Centro: PSR Malalche
+FALTA MAPPED: TRENG-TRENG | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Huenchul Ancaman Colipi | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Antionio | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Ramon Ancamil | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Manuel Painenao | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Mulato Huenulef | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Juan Mauricio Guaiquean | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Hueichao Millan | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: José Luis Collio | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Ignacio Carrillo | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Lorenzo Cayul | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Briones Painemal | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Pablo Ignacio Guichapan | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Antonio Bulnes Painemal | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Juana Quilacan de Levipil | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: José Painemal | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Juan Cayul | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Quintul V. De Alcaman Cayul | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Flora Chiguaillan V. De Lienqueo | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Foyel V. De José Ñanculef | Sector: Luna | Distrito: Carirriñe | Centro: PSR Malalche
+FALTA MAPPED: Pedro Marin Calcucura | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Juan Agustin Painequeo | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Juan Nahuelpi | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Anselmo Quintriqueo | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Alberto Bejar | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Juan Hulipan | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Federico Antinao | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Juan Lienan | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Juan Ancaye | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Pedro Angel Bejar | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Juan Levio | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Agustín Chihuaicura | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: José Epulef | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Lorenzo Coliman | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: José Melinao | Sector: Luna | Distrito: Repocura | Centro: PSR Huentelar
+FALTA MAPPED: Huamaqui | Sector: Luna | Distrito: Repocura | Centro: PSR Huamaqui
+FALTA MAPPED: Huamaqui Alto | Sector: Luna | Distrito: Repocura | Centro: PSR Huamaqui
+FALTA MAPPED: Repocura Deuco | Sector: Luna | Distrito: Repocura | Centro: PSR Huamaqui
+FALTA MAPPED: El Aromo | Sector: Luna | Distrito: Repocura | Centro: PSR Huamaqui
+
+--- PROPUESTA DICCIONARIO AREA_INF_CENTRO ---
+sector_a_centro = {
+    "LLOS CARRIZOS": "Cesfam Cholchol",
+    "GUINCA GUENCHULEO": "Cesfam Cholchol",
+    "RAMON ANCAMIL": "Cesfam Cholchol",
+    "FERMIN GUENCHUAL": "Cesfam Cholchol",
+    "DIONISIO PAILLAO": "Cesfam Cholchol",
+    "MIGUEL LEMUNAO": "Cesfam Cholchol",
+    "BENITO NAIN": "Cesfam Cholchol",
+    "JUAN PEDRO GUILCAN": "Cesfam Cholchol",
+    "DOMINGO COLIN": "Cesfam Cholchol",
+    "GUENUL LLANCAL": "Cesfam Cholchol",
+    "JUAN CURIGUAL": "Cesfam Cholchol",
+    "JOSÉ LONCOMIL": "Cesfam Cholchol",
+    "ROSARIO QUEZADA": "Cesfam Cholchol",
+    "DOMINGO MARILLAN": "Cesfam Cholchol",
+    "SANTOS MARILLAN": "Cesfam Cholchol",
+    "JACINTO CARRASCO LLEUVUL": "Cesfam Cholchol",
+    "ROSA MILLAPAN": "Cesfam Cholchol",
+    "JUAN MELINAO": "Cesfam Cholchol",
+    "JUAN GUAIQUIL": "Cesfam Cholchol",
+    "MANUEL CAYUNAO": "Cesfam Cholchol",
+    "BENANCIO COÑOEPAN": "Cesfam Cholchol",
+    "CATRILEO LLEUBUL": "Cesfam Cholchol",
+    "PASCUAL COLOMA Y TRIPAILAO": "Cesfam Cholchol",
+    "PEDRO GUILCAN": "Cesfam Cholchol",
+    "MANUEL HUNCHUNAO": "Cesfam Cholchol",
+    "JUAN MILLAPAN": "Cesfam Cholchol",
+    "JUAN CURALL": "Cesfam Cholchol",
+    "DOMINGO COÑOEPAN": "Cesfam Cholchol",
+    "JOSÉ MANUEL GUILCAN": "Cesfam Cholchol",
+    "JUAN HULIPAN": "Cesfam Cholchol",
+    "JUAN LIENAN": "Cesfam Cholchol",
+    "JUAN COLIPI HUECHUNAO": "Cesfam Cholchol",
+    "ANTONIO RELMUCAO": "Cesfam Cholchol",
+    "JOSÉ CHANQUEO": "Cesfam Cholchol",
+    "RAMON PAINEMAL": "Cesfam Cholchol",
+    "PEDRO CAYUQUEO": "Cesfam Cholchol",
+    "JUAN DE DIOS LLEUVUL": "Cesfam Cholchol",
+    "FRANCISCO CURIQUEO": "Cesfam Cholchol",
+    "CALFULAF": "Cesfam Cholchol",
+    "MATEO YAUPI": "Cesfam Cholchol",
+    "CARILAF CHIFCA": "Cesfam Cholchol",
+    "RAMON ANTILAF": "Cesfam Cholchol",
+    "JOSÉ TRAIPE": "Cesfam Cholchol",
+    "GABRIEL CHICAHUAL": "Cesfam Cholchol",
+    "AVELINO HUINCA": "Cesfam Cholchol",
+    "JOSÉ SOTO NEILLAI NIELAF": "Cesfam Cholchol",
+    "PEDRO CURIHUINCA": "Cesfam Cholchol",
+    "DOMINGO CHAÑILLAO": "Cesfam Cholchol",
+    "ANTONIO TROPA Y JUAN SANTIAGO": "Cesfam Cholchol",
+    "CALVUNAO CAÑIUPAN": "Cesfam Cholchol",
+    "PAILLACURA LINCOMIL": "Cesfam Cholchol",
+    "JUAN MULATO": "Cesfam Cholchol",
+    "JOSÉ MIGUEL HUAIQUEAN": "Cesfam Cholchol",
+    "LUCIANO MILLANAO": "Cesfam Cholchol",
+    "JUAN CALBUQUEO": "Cesfam Cholchol",
+    "LORENZO TRANAMIL": "Cesfam Cholchol",
+    "JOSÉ NINO Y OTRO": "PSR Malalche",
+    "TRENG-TRENG": "PSR Malalche",
+    "RAYEN LAFKEN DE NEWENKO": "PSR Malalche",
+    "MANUELHUAL": "PSR Malalche",
+    "FRANCISCO MALIQUEO": "PSR Malalche",
+    "CALVUL COLLIO": "PSR Malalche",
+    "NAHUELMAN": "PSR Malalche",
+    "MULATOCHIGUAIHUE": "PSR Malalche",
+    "ROSARIO MORALES": "PSR Malalche",
+    "LORENZO CALFUQUEO": "PSR Malalche",
+    "JOSÉ NIÑO": "PSR Malalche",
+    "ANTONIO PAINEMAL, JUAN PAINENAO, COLLIO Y OTROS": "PSR Malalche",
+    "CURIHUAL": "PSR Malalche",
+    "LIINQUEO": "PSR Malalche",
+    "QUILIMANZANO-SANJOSE": "PSR Malalche",
+    "QUINTUL V. DE ALCAMAN CAYUL": "PSR Malalche",
+    "HUENCHUL ANCAMAN COLIPI": "PSR Malalche",
+    "FLORA CHIGUAILLAN V. DE LIENQUEO": "PSR Malalche",
+    "FOYEL V. DE JOSÉ ÑANCULEF": "PSR Malalche",
+    "JOSÉ CURIQUEO": "PSR Malalche",
+    "JUAN LEVIO": "PSR Malalche",
+    "ANTONIO CAYUL": "PSR Malalche",
+    "LORENZO CAYUL": "PSR Malalche",
+    "JUAN CAYUL": "PSR Malalche",
+    "JUANA CAYUL DE BARRA": "PSR Malalche",
+    "MULATO HUENULEF": "PSR Malalche",
+    "HUEICHAO MILLAN": "PSR Malalche",
+    "JUAN MAURICIO GUAIQUEAN": "PSR Malalche",
+    "MANUEL PAINENAO": "PSR Malalche",
+    "LEVIN LEMUNAO": "PSR Malalche",
+    "ANTIONIO": "PSR Malalche",
+    "JUAN ANTONIO": "PSR Malalche",
+    "JOSÉ LUIS COLLIO": "PSR Malalche",
+    "IGNACIO CARRILLO": "PSR Malalche",
+    "BRIONES PAINEMAL": "PSR Malalche",
+    "PABLO IGNACIO GUICHAPAN": "PSR Malalche",
+    "ANTONIO BULNES PAINEMAL": "PSR Malalche",
+    "JUANA QUILACAN DE LEVIPIL": "PSR Malalche",
+    "JOSÉ PAINEMAL": "PSR Malalche",
+    "PEDRO MARIN CALCUCURA": "PSR Huentelar",
+    "JUAN AGUSTIN PAINEQUEO": "PSR Huentelar",
+    "JUAN NAHUELPI": "PSR Huentelar",
+    "ANSELMO QUINTRIQUEO": "PSR Huentelar",
+    "JUAN DE DIOS HUICHALEO": "PSR Huentelar",
+    "ALBERTO BEJAR": "PSR Huentelar",
+    "FEDERICO ANTINAO": "PSR Huentelar",
+    "JUAN ANCAYE": "PSR Huentelar",
+    "PEDRO ANGEL BEJAR": "PSR Huentelar",
+    "AGUSTÍN CHIHUAICURA": "PSR Huentelar",
+    "JOSÉ EPULEF": "PSR Huentelar",
+    "LORENZO COLIMAN": "PSR Huentelar",
+    "JOSÉ MELINAO": "PSR Huentelar",
+    "HUAMAQUI": "PSR Huamaqui",
+    "HUAMAQUI ALTO": "PSR Huamaqui",
+    "REPOCURA DEUCO": "PSR Huamaqui",
+    "EL AROMO": "PSR Huamaqui",
+}
+
+--- NUEVOS ELEMENTOS PARA sector_a_comunidad ---
+    "JUAN CURIGUAL": "Juan Curigual",
+    "JOSÉ LONCOMIL": "José Loncomil",
+    "SANTOS MARILLAN": "Santos Marillan",
+    "JACINTO CARRASCO LLEUVUL": "Jacinto Carrasco Lleuvul",
+    "CATRILEO LLEUBUL": "Catrileo Lleubul",
+    "PASCUAL COLOMA Y TRIPAILAO": "Pascual Coloma y Tripailao",
+    "MANUEL HUNCHUNAO": "Manuel Hunchunao",
+    "JOSÉ MANUEL GUILCAN": "José Manuel Guilcan",
+    "JUAN HULIPAN": "Juan Hulipan",
+    "ANTONIO RELMUCAO": "Antonio Relmucao",
+    "JOSÉ CHANQUEO": "JOSÉ CHANQUEO",
+    "CARILAF CHIFCA": "Carilaf Chifca",
+    "JOSÉ TRAIPE": "José Traipe",
+    "CALVUNAO CAÑIUPAN": "Calvunao Cañiupan",
+    "PAILLACURA LINCOMIL": "Paillacura Lincomil",
+    "JUAN MULATO": "Juan Mulato",
+    "JOSÉ MIGUEL HUAIQUEAN": "José Miguel Huaiquean",
+    "LUCIANO MILLANAO": "Luciano Millanao",
+    "LORENZO TRANAMIL": "Lorenzo Tranamil",
+    "JOSÉ NINO Y OTRO": "JOSÉ NINO Y OTRO",
+    "NAHUELMAN": "Nahuelman",
+    "MULATOCHIGUAIHUE": "MulatoChiguaihue",
+    "ROSARIO MORALES": "Rosario Morales",
+    "LORENZO CALFUQUEO": "Lorenzo Calfuqueo",
+    "JOSÉ NIÑO": "José Niño",
+    "CURIHUAL": "Curihual",
+    "LIINQUEO": "Liinqueo",
+    "QUILIMANZANO-SANJOSE": "Quilimanzano-SanJose",
+    "FLORA CHIGUAILLAN V. DE LIENQUEO": "Flora Chiguaillan V. De Lienqueo",
+    "FOYEL V. DE JOSÉ ÑANCULEF": "Foyel V. De José Ñanculef",
+    "JOSÉ CURIQUEO": "José Curiqueo",
+    "JUAN CAYUL": "Juan Cayul",
+    "JUANA CAYUL DE BARRA": "Juana Cayul de Barra",
+    "ANTIONIO": "Antionio",
+    "IGNACIO CARRILLO": "Ignacio Carrillo",
+    "PABLO IGNACIO GUICHAPAN": "Pablo Ignacio Guichapan",
+    "ANTONIO BULNES PAINEMAL": "Antonio Bulnes Painemal",
+    "JUANA QUILACAN DE LEVIPIL": "Juana Quilacan de Levipil",
+    "JOSÉ PAINEMAL": "José Painemal",
+    "JUAN NAHUELPI": "Juan Nahuelpi",
+    "PEDRO ANGEL BEJAR": "Pedro Angel Bejar",
+    "JOSÉ EPULEF": "José Epulef",
+    "LORENZO COLIMAN": "Lorenzo Coliman",
+    "JOSÉ MELINAO": "José Melinao",
+    "HUAMAQUI": "Huamaqui",
+    "HUAMAQUI ALTO": "Huamaqui Alto",
+    "REPOCURA DEUCO": "Repocura Deuco",
+    "EL AROMO": "El Aromo",
+
+--- NUEVOS ELEMENTOS PARA sector_a_distrito ---
+    "GUINCA GUENCHULEO": "tranahuillin",
+    "RAMON ANCAMIL": "carirriñe",
+    "FERMIN GUENCHUAL": "tranahuillin",
+    "DIONISIO PAILLAO": "tranahuillin",
+    "MIGUEL LEMUNAO": "cholchol",
+    "BENITO NAIN": "cholchol",
+    "JUAN PEDRO GUILCAN": "cholchol",
+    "DOMINGO COLIN": "repocura",
+    "GUENUL LLANCAL": "repocura",
+    "JUAN CURIGUAL": "repocura",
+    "JOSÉ LONCOMIL": "tranahuillin",
+    "ROSARIO QUEZADA": "cholchol",
+    "DOMINGO MARILLAN": "cholchol",
+    "SANTOS MARILLAN": "cholchol",
+    "JACINTO CARRASCO LLEUVUL": "cholchol",
+    "JUAN MELINAO": "cholchol",
+    "JUAN GUAIQUIL": "cholchol",
+    "MANUEL CAYUNAO": "cholchol",
+    "BENANCIO COÑOEPAN": "cholchol",
+    "CATRILEO LLEUBUL": "cholchol",
+    "PASCUAL COLOMA Y TRIPAILAO": "tranahuillin",
+    "PEDRO GUILCAN": "cholchol",
+    "MANUEL HUNCHUNAO": "cholchol",
+    "JUAN CURALL": "cholchol",
+    "DOMINGO COÑOEPAN": "cholchol",
+    "JOSÉ MANUEL GUILCAN": "cholchol",
+    "JUAN HULIPAN": "repocura",
+    "JUAN LIENAN": "repocura",
+    "JOSÉ CHANQUEO": "tranahuillin",
+    "RAMON PAINEMAL": "rapahue",
+    "PEDRO CAYUQUEO": "rapahue",
+    "JUAN DE DIOS LLEUVUL": "tranahuillin",
+    "FRANCISCO CURIQUEO": "tranahuillin",
+    "CALFULAF": "tranahuillin",
+    "MATEO YAUPI": "tranahuillin",
+    "CARILAF CHIFCA": "tranahuillin",
+    "RAMON ANTILAF": "tranahuillin",
+    "JOSÉ TRAIPE": "tranahuillin",
+    "GABRIEL CHICAHUAL": "tranahuillin",
+    "JOSÉ SOTO NEILLAI NIELAF": "tranahuillin",
+    "DOMINGO CHAÑILLAO": "tranahuillin",
+    "CALVUNAO CAÑIUPAN": "tranahuillin",
+    "PAILLACURA LINCOMIL": "tranahuillin",
+    "JUAN MULATO": "tranahuillin",
+    "JOSÉ MIGUEL HUAIQUEAN": "tranahuillin",
+    "LUCIANO MILLANAO": "tranahuillin",
+    "JUAN CALBUQUEO": "rapahue",
+    "JOSÉ NINO Y OTRO": "rapahue",
+    "TRENG-TRENG": "carirriñe",
+    "MANUELHUAL": "rapahue",
+    "FRANCISCO MALIQUEO": "rapahue",
+    "CALVUL COLLIO": "rapahue",
+    "MULATOCHIGUAIHUE": "rapahue",
+    "ROSARIO MORALES": "rapahue",
+    "LORENZO CALFUQUEO": "rapahue",
+    "JOSÉ NIÑO": "rapahue",
+    "CURIHUAL": "rapahue",
+    "LIINQUEO": "rapahue",
+    "QUINTUL V. DE ALCAMAN CAYUL": "carirriñe",
+    "HUENCHUL ANCAMAN COLIPI": "carirriñe",
+    "FLORA CHIGUAILLAN V. DE LIENQUEO": "carirriñe",
+    "FOYEL V. DE JOSÉ ÑANCULEF": "carirriñe",
+    "JOSÉ CURIQUEO": "repocura",
+    "JUAN LEVIO": "repocura",
+    "LORENZO CAYUL": "carirriñe",
+    "JUAN CAYUL": "carirriñe",
+    "JUANA CAYUL DE BARRA": "repocura",
+    "MULATO HUENULEF": "carirriñe",
+    "HUEICHAO MILLAN": "carirriñe",
+    "JUAN MAURICIO GUAIQUEAN": "carirriñe",
+    "MANUEL PAINENAO": "carirriñe",
+    "LEVIN LEMUNAO": "repocura",
+    "ANTIONIO": "carirriñe",
+    "JOSÉ LUIS COLLIO": "carirriñe",
+    "BRIONES PAINEMAL": "carirriñe",
+    "JUANA QUILACAN DE LEVIPIL": "carirriñe",
+    "JOSÉ PAINEMAL": "carirriñe",
+    "PEDRO MARIN CALCUCURA": "repocura",
+    "JUAN AGUSTIN PAINEQUEO": "repocura",
+    "ANSELMO QUINTRIQUEO": "repocura",
+    "ALBERTO BEJAR": "repocura",
+    "FEDERICO ANTINAO": "repocura",
+    "JUAN ANCAYE": "repocura",
+    "PEDRO ANGEL BEJAR": "repocura",
+    "AGUSTÍN CHIHUAICURA": "repocura",
+    "JOSÉ EPULEF": "repocura",
+    "LORENZO COLIMAN": "repocura",
+    "JOSÉ MELINAO": "repocura",
+    "EL AROMO": "repocura",

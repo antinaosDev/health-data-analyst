@@ -139,6 +139,10 @@ with col5:
                 # Procesar CSV
                 df = proc_csv(archivo)
                 
+                if df is None:
+                    st.error(f"Error en archivo {i+1}: El archivo está vacío, no se pudo detectar la codificación o tiene un formato no válido.")
+                    continue
+                
                 # 2. OPTIMIZAR AL INSTANTE (Función corregida)
                 df = optimizar_dataframe(df)
                 
@@ -174,9 +178,7 @@ if st.session_state.lista_dfs:
             st.toast(f"Se eliminaron {filas_borradas} registros duplicados.", icon="♻️")
         # --------------------------------------
 
-        df_con = normaliza_direcc(df_con)
-        
-        # Columnas a eliminar para ahorrar espacio
+        # Columnas a eliminar para ahorrar espacio (las eliminamos ANTES de normalizar direcciones para ahorrar RAM)
         cols_to_drop = [
             "RUT PROFESIONAL", "ESPECIALIDAD", "SUBESPECIALIDAD", "ESTABLECIMIENTO", 
             "HORA GENERADA", "ESTADO HORA", "HORA ASIGNADA", "HORA EJECUTADA", 
@@ -184,8 +186,10 @@ if st.session_state.lista_dfs:
             "TIPO_DIAGNOSTICO 1", "TIPO DIAGNOSTICO 2", "TIPO DIAGNOSTICO 3",
             "DIAGNOSTICO 1", "DIAGNOSTICO 2", "DIAGNOSTICO 3"
         ]
-        
-        df_con_clean = df_con.drop(cols_to_drop, axis=1, errors='ignore')
+        df_con = df_con.drop(cols_to_drop, axis=1, errors='ignore')
+
+        df_con = normaliza_direcc(df_con)
+        df_con_clean = df_con
 
         # 5. Optimizar el DataFrame final antes de guardarlo en session_state
         df_con_clean = optimizar_dataframe(df_con_clean)
@@ -198,6 +202,8 @@ if st.session_state.lista_dfs:
         st.session_state.df_agenda = df_con_clean
 
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         st.error(f"Error uniendo archivos: {e}")
         st.session_state.lista_dfs = [] # Limpiar si falla
         gc.collect()

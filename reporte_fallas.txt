@@ -1,0 +1,253 @@
+=== ANALISIS DE FALLAS DETALLADO ===
+
+--- FALLA en: 'Ramon Ancamil' ---
+  DIRECCION_NORM: 'RAMON ANCAMIL'
+  DISTRITO Asignado: 'carirriñe'
+  COMUNIDAD Asignada: 'Ramon Ancamil'
+  Esperado: 'Cesfam Cholchol' | Obtenido: 'PSR Malalche'
+  Coincidencias Distrito: ['RAMON ANCAMIL -> carirriñe']
+  Coincidencias Comunidad: ['RAMON ANCAMIL -> Ramon Ancamil']
+
+--- FALLA en: 'Domingo Colin' ---
+  DIRECCION_NORM: 'DOMINGO COLIN'
+  DISTRITO Asignado: 'repocura'
+  COMUNIDAD Asignada: 'Domingo Colin'
+  Esperado: 'Cesfam Cholchol' | Obtenido: 'PSR Malalche'
+  Coincidencias Distrito: ['DOMINGO COLIN -> repocura']
+  Coincidencias Comunidad: ['DOMINGO COLIN -> Domingo Colin']
+
+--- FALLA en: 'Guenul Llancal' ---
+  DIRECCION_NORM: 'GUENUL LLANCAL'
+  DISTRITO Asignado: 'repocura'
+  COMUNIDAD Asignada: 'Guenul Llancal'
+  Esperado: 'Cesfam Cholchol' | Obtenido: 'PSR Malalche'
+  Coincidencias Distrito: ['GUENUL LLANCAL -> repocura']
+  Coincidencias Comunidad: ['GUENUL LLANCAL -> Guenul Llancal']
+
+--- FALLA en: 'Juan Curigual' ---
+  DIRECCION_NORM: 'JUAN CURIGUAL'
+  DISTRITO Asignado: 'repocura'
+  COMUNIDAD Asignada: 'Juan Curigual'
+  Esperado: 'Cesfam Cholchol' | Obtenido: 'PSR Malalche'
+  Coincidencias Distrito: ['JUAN CURIGUAL -> repocura']
+  Coincidencias Comunidad: ['JUAN CURIGUAL -> Juan Curigual']
+
+--- FALLA en: 'Juan Hulipan' ---
+  DIRECCION_NORM: 'JUAN HULIPAN'
+  DISTRITO Asignado: 'repocura'
+  COMUNIDAD Asignada: 'Juan Hulipan'
+  Esperado: 'Cesfam Cholchol' | Obtenido: 'PSR Huentelar'
+  Coincidencias Distrito: ['JUAN HULIPAN -> repocura']
+  Coincidencias Comunidad: ['JUAN HULIPAN -> Juan Hulipan']
+
+--- FALLA en: 'Juan Lienan' ---
+  DIRECCION_NORM: 'JUAN LIENAN'
+  DISTRITO Asignado: 'repocura'
+  COMUNIDAD Asignada: 'Juan Lienan'
+  Esperado: 'Cesfam Cholchol' | Obtenido: 'PSR Huentelar'
+  Coincidencias Distrito: ['JUAN LIENAN -> repocura']
+  Coincidencias Comunidad: ['JUAN LIENAN -> Juan Lienan']
+
+--- FALLA en: 'Juan Colipi Huechunao' ---
+  DIRECCION_NORM: 'JUAN COLIPI HUECHUNAO'
+  DISTRITO Asignado: 'carirriñe'
+  COMUNIDAD Asignada: 'Juan Colipi Huechunao'
+  Esperado: 'Cesfam Cholchol' | Obtenido: 'PSR Malalche'
+  Coincidencias Distrito: ['HUECH -> carirriñe']
+  Coincidencias Comunidad: ['JUAN COLIPI -> Juan Colipi Huechunao']
+
+--- FALLA en: 'Ramon Painemal' ---
+  DIRECCION_NORM: 'RAMON PAINEMAL'
+  DISTRITO Asignado: 'rapahue'
+  COMUNIDAD Asignada: 'Ramon Painemal'
+  Esperado: 'Cesfam Cholchol' | Obtenido: 'PSR Malalche'
+  Coincidencias Distrito: ['RAMON PAINEMAL -> rapahue']
+  Coincidencias Comunidad: ['RAMON PAINE -> Ramon Painemal']
+
+--- FALLA en: 'Pedro Cayuqueo' ---
+  DIRECCION_NORM: 'PEDRO CAYUQUEO'
+  DISTRITO Asignado: 'rapahue'
+  COMUNIDAD Asignada: 'Pedro Cayuqueo'
+  Esperado: 'Cesfam Cholchol' | Obtenido: 'PSR Malalche'
+  Coincidencias Distrito: ['PEDRO CAYUQUEO -> rapahue']
+  Coincidencias Comunidad: ['PEDRO CAY -> Pedro Cayuqueo']
+
+--- FALLA en: 'Avelino Huinca' ---
+  DIRECCION_NORM: 'AVELINO HUINCA'
+  DISTRITO Asignado: 'carirriñe'
+  COMUNIDAD Asignada: 'Avelino Huinca'
+  Esperado: 'Cesfam Cholchol' | Obtenido: 'PSR Malalche'
+  Coincidencias Distrito: ['HUI -> carirriñe']
+  Coincidencias Comunidad: ['AVELINO HUINC -> Avelino Huinca']
+
+--- FALLA en: 'Pedro Curihuinca' ---
+  DIRECCION_NORM: 'PEDRO CURIHUINCA'
+  DISTRITO Asignado: 'carirriñe'
+  COMUNIDAD Asignada: 'Pedro Curihuinca'
+  Esperado: 'Cesfam Cholchol' | Obtenido: 'PSR Malalche'
+  Coincidencias Distrito: ['HUI -> carirriñe']
+  Coincidencias Comunidad: ['PEDRO CURI -> Pedro Curihuinca']
+
+--- FALLA en: 'Juan Calbuqueo' ---
+  DIRECCION_NORM: 'JUAN CALBUQUEO'
+  DISTRITO Asignado: 'rapahue'
+  COMUNIDAD Asignada: 'Juan Calbuqueo'
+  Esperado: 'Cesfam Cholchol' | Obtenido: 'PSR Malalche'
+  Coincidencias Distrito: ['JUAN CALBUQUEO -> rapahue']
+  Coincidencias Comunidad: ['JUAN CALBU -> Juan Calbuqueo']
+
+--- FALLA en: 'RAYEN LAFKEN DE NEWENKO' ---
+  DIRECCION_NORM: 'RAYEN LAFKEN DE NEWENKO'
+  DISTRITO Asignado: 'cholchol'
+  COMUNIDAD Asignada: 'Rayen Lafken De Newenko'
+  Esperado: 'PSR Malalche' | Obtenido: 'Cesfam Cholchol'
+  Coincidencias Distrito: ['RAYEN -> cholchol']
+  Coincidencias Comunidad: ['RAYEN LAF -> Rayen Lafken De Newenko']
+
+--- FALLA en: 'Nahuelman' ---
+  DIRECCION_NORM: 'NAHUELMAN'
+  DISTRITO Asignado: 'repocura'
+  COMUNIDAD Asignada: 'Nahuelman'
+  Esperado: 'PSR Malalche' | Obtenido: 'NO_ESPECIFICADO'
+  Coincidencias Distrito: ['NAHUEL -> repocura']
+  Coincidencias Comunidad: ['NAHUELMAN -> Nahuelman']
+
+--- FALLA en: 'Antonio Painemal, Juan Painenao, Collio y otros' ---
+  DIRECCION_NORM: 'ANTONIO PAINEMAL JUAN PAINENAO COLLIO Y OTROS'
+  DISTRITO Asignado: 'cholchol'
+  COMUNIDAD Asignada: 'Antonio Painemal'
+  Esperado: 'PSR Malalche' | Obtenido: 'Cesfam Cholchol'
+  Coincidencias Distrito: ['ANTONIO -> cholchol']
+  Coincidencias Comunidad: ['ANTONIO PAINEMAL -> Antonio Painemal', 'JUAN PAINEN -> Juan Painenao']
+
+--- FALLA en: 'Quintul V. De Alcaman Cayul' ---
+  DIRECCION_NORM: 'QUINTUL V DE ALCAMAN CAYUL'
+  DISTRITO Asignado: 'NO_ESPECIFICADO'
+  COMUNIDAD Asignada: 'Quintul V. De Alcaman Cayul'
+  Esperado: 'PSR Malalche' | Obtenido: 'NO_ESPECIFICADO'
+  Coincidencias Distrito: Ninguna
+  Coincidencias Comunidad: ['QUINTUL -> Quintul V. De Alcaman Cayul']
+
+--- FALLA en: 'Flora Chiguaillan V. De Lienqueo' ---
+  DIRECCION_NORM: 'FLORA CHIGUAILLAN V DE LIENQUEO'
+  DISTRITO Asignado: 'NO_ESPECIFICADO'
+  COMUNIDAD Asignada: 'NO_ESPECIFICADO'
+  Esperado: 'PSR Malalche' | Obtenido: 'NO_ESPECIFICADO'
+  Coincidencias Distrito: Ninguna
+
+--- FALLA en: 'Foyel V. De José Ñanculef' ---
+  DIRECCION_NORM: 'FOYEL V DE JOSE NANCULEF'
+  DISTRITO Asignado: 'NO_ESPECIFICADO'
+  COMUNIDAD Asignada: 'NO_ESPECIFICADO'
+  Esperado: 'PSR Malalche' | Obtenido: 'NO_ESPECIFICADO'
+  Coincidencias Distrito: Ninguna
+
+--- FALLA en: 'José Curiqueo' ---
+  DIRECCION_NORM: 'JOSE CURIQUEO'
+  DISTRITO Asignado: 'repocura'
+  COMUNIDAD Asignada: 'José Curiqueo'
+  Esperado: 'PSR Malalche' | Obtenido: 'NO_ESPECIFICADO'
+  Coincidencias Distrito: ['JOSE CURIQUEO -> repocura']
+  Coincidencias Comunidad: ['JOSE CURI -> José Curiqueo', 'JOSE CURIQ -> José Curiqueo', 'JOSE CURIQUEO -> José Curiqueo']
+
+--- FALLA en: 'Juan Levio' ---
+  DIRECCION_NORM: 'JUAN LEVIO'
+  DISTRITO Asignado: 'repocura'
+  COMUNIDAD Asignada: 'Juan Levio'
+  Esperado: 'PSR Malalche' | Obtenido: 'PSR Huentelar'
+  Coincidencias Distrito: ['JUAN LEVIO -> repocura']
+  Coincidencias Comunidad: ['JUAN LEVIO -> Juan Levio']
+
+--- FALLA en: 'Antonio Cayul' ---
+  DIRECCION_NORM: 'ANTONIO CAYUL'
+  DISTRITO Asignado: 'cholchol'
+  COMUNIDAD Asignada: 'Antonio Cayul'
+  Esperado: 'PSR Malalche' | Obtenido: 'Cesfam Cholchol'
+  Coincidencias Distrito: ['ANTONIO -> cholchol']
+  Coincidencias Comunidad: ['ANTONIO CAYUL -> Antonio Cayul']
+
+--- FALLA en: 'Juan Antonio' ---
+  DIRECCION_NORM: 'JUAN ANTONIO'
+  DISTRITO Asignado: 'cholchol'
+  COMUNIDAD Asignada: 'Juan Antonio'
+  Esperado: 'PSR Malalche' | Obtenido: 'Cesfam Cholchol'
+  Coincidencias Distrito: ['ANTONIO -> cholchol']
+  Coincidencias Comunidad: ['JUAN ANTONIO -> Juan Antonio']
+
+--- FALLA en: 'Antonio Painemal, Juan Painenao, Collio y otros' ---
+  DIRECCION_NORM: 'ANTONIO PAINEMAL JUAN PAINENAO COLLIO Y OTROS'
+  DISTRITO Asignado: 'cholchol'
+  COMUNIDAD Asignada: 'Antonio Painemal'
+  Esperado: 'PSR Malalche' | Obtenido: 'Cesfam Cholchol'
+  Coincidencias Distrito: ['ANTONIO -> cholchol']
+  Coincidencias Comunidad: ['ANTONIO PAINEMAL -> Antonio Painemal', 'JUAN PAINEN -> Juan Painenao']
+
+--- FALLA en: 'Pablo Ignacio Guichapan' ---
+  DIRECCION_NORM: 'PABLO IGNACIO GUICHAPAN'
+  DISTRITO Asignado: 'cholchol'
+  COMUNIDAD Asignada: 'Pablo Ignacio Guichapan'
+  Esperado: 'PSR Malalche' | Obtenido: 'Cesfam Cholchol'
+  Coincidencias Distrito: ['IGNACIO -> cholchol']
+  Coincidencias Comunidad: ['PABLO IGNACIO GUICHAPAN -> Pablo Ignacio Guichapan']
+
+--- FALLA en: 'Antonio Bulnes Painemal' ---
+  DIRECCION_NORM: 'ANTONIO BULNES PAINEMAL'
+  DISTRITO Asignado: 'cholchol'
+  COMUNIDAD Asignada: 'Antonio Bulnes Painemal'
+  Esperado: 'PSR Malalche' | Obtenido: 'Cesfam Cholchol'
+  Coincidencias Distrito: ['ANTONIO -> cholchol']
+  Coincidencias Comunidad: ['ANTONIO BULNES PAINEMAL -> Antonio Bulnes Painemal']
+
+--- FALLA en: 'Quintul V. De Alcaman Cayul' ---
+  DIRECCION_NORM: 'QUINTUL V DE ALCAMAN CAYUL'
+  DISTRITO Asignado: 'NO_ESPECIFICADO'
+  COMUNIDAD Asignada: 'Quintul V. De Alcaman Cayul'
+  Esperado: 'PSR Malalche' | Obtenido: 'NO_ESPECIFICADO'
+  Coincidencias Distrito: Ninguna
+  Coincidencias Comunidad: ['QUINTUL -> Quintul V. De Alcaman Cayul']
+
+--- FALLA en: 'Flora Chiguaillan V. De Lienqueo' ---
+  DIRECCION_NORM: 'FLORA CHIGUAILLAN V DE LIENQUEO'
+  DISTRITO Asignado: 'NO_ESPECIFICADO'
+  COMUNIDAD Asignada: 'NO_ESPECIFICADO'
+  Esperado: 'PSR Malalche' | Obtenido: 'NO_ESPECIFICADO'
+  Coincidencias Distrito: Ninguna
+
+--- FALLA en: 'Foyel V. De José Ñanculef' ---
+  DIRECCION_NORM: 'FOYEL V DE JOSE NANCULEF'
+  DISTRITO Asignado: 'NO_ESPECIFICADO'
+  COMUNIDAD Asignada: 'NO_ESPECIFICADO'
+  Esperado: 'PSR Malalche' | Obtenido: 'NO_ESPECIFICADO'
+  Coincidencias Distrito: Ninguna
+
+--- FALLA en: 'Juan de Dios Huichaleo' ---
+  DIRECCION_NORM: 'JUAN DE DIOS HUICHALEO'
+  DISTRITO Asignado: 'carirriñe'
+  COMUNIDAD Asignada: 'Juan de Dios Huichaleo'
+  Esperado: 'PSR Huentelar' | Obtenido: 'PSR Malalche'
+  Coincidencias Distrito: ['HUI -> carirriñe']
+  Coincidencias Comunidad: ['JUAN DE DIOS HUIC -> Juan de Dios Huichaleo']
+
+--- FALLA en: 'Agustín Chihuaicura' ---
+  DIRECCION_NORM: 'AGUSTIN CHIHUAICURA'
+  DISTRITO Asignado: 'repocura'
+  COMUNIDAD Asignada: 'Agustín Chihuaicura'
+  Esperado: 'PSR Huentelar' | Obtenido: 'NO_ESPECIFICADO'
+  Coincidencias Distrito: ['AGUSTIN CHIHUAICURA -> repocura']
+  Coincidencias Comunidad: ['CHIHUAI -> Agustín Chihuaicura']
+
+--- FALLA en: 'José Epulef' ---
+  DIRECCION_NORM: 'JOSE EPULEF'
+  DISTRITO Asignado: 'repocura'
+  COMUNIDAD Asignada: 'José Epulef'
+  Esperado: 'PSR Huentelar' | Obtenido: 'NO_ESPECIFICADO'
+  Coincidencias Distrito: ['JOSE EPULEF -> repocura']
+  Coincidencias Comunidad: ['JOSE EPULEF -> José Epulef']
+
+--- FALLA en: 'José Melinao' ---
+  DIRECCION_NORM: 'JOSE MELINAO'
+  DISTRITO Asignado: 'repocura'
+  COMUNIDAD Asignada: 'José Melinao'
+  Esperado: 'PSR Huentelar' | Obtenido: 'NO_ESPECIFICADO'
+  Coincidencias Distrito: ['JOSE MELINAO -> repocura']
+  Coincidencias Comunidad: ['JOSE MELINAO -> José Melinao']

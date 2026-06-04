@@ -60,7 +60,10 @@ with col5:
 
         for i, archivo in enumerate(archivos):
             df = proc_csv(archivo)
-            st.session_state.lista_dfs.append(df)
+            if df is not None:
+                st.session_state.lista_dfs.append(df)
+            else:
+                st.error(f"Error en archivo {i+1}: El archivo está vacío, no se pudo detectar la codificación o tiene un formato no válido.")
 
             my_bar.progress((i + 1) / total, text=f"{i + 1} de {total} archivos procesados")
             time.sleep(0.3)  # opcional
@@ -75,23 +78,8 @@ if st.session_state.lista_dfs:
     df_con = procesamiento_agenda(st.session_state.lista_dfs)
     df_con = normaliza_direcc(df_con)
 
-    @st.cache_data(ttl=600)
-    def conversion_pandas_polars(df):
-        df_con = pl.from_pandas(df)
-        return df_con
-    
-    df_pol = conversion_pandas_polars(df_con)
-    df_con = df_pol # Conversión a Polars
-
-    # Clasificación GES usando Polars
-    df_con_ges = cargar_archivo_class_ges_polars(df_con, diccionario)
-    #VOLVER A PANDAS
-    @st.cache_data(ttl=600)
-    def conversion_polars_pandas(df):
-        return df.to_pandas()
-    
-    df_prev_ges =  conversion_polars_pandas(df_con_ges)
-    df_con_ges = df_prev_ges
+    # Clasificación GES usando Pandas (evitando conversiones pesadas a Polars)
+    df_con_ges = cargar_archivo_class_ges_pandas(df_con, diccionario)
     df_con_clean = df_con_ges[['RUT','GENERO','ACCION A TOMAR','COMUNA','ETNIA PERCEPCION','PROCEDENCIA','FECHA ASIGNADA','ESCOLARIDAD','RANGO_SALARIAL','ESTADO ATENCION','FECHA EJECUTADA','CLAS_ETARIA','ANIO_ASIG_HR',
                                'MES_ASIG_HR','POLICLINICO','AGRUPACION',"DIAGNOSTICO 1", "DIAGNOSTICO 2",
                                  "DIAGNOSTICO 3",'ES_GES','CAT_GES','CONF_GES','SOSP_GES','TRAT_GES','SECTOR','COMUNIDAD','RANGO_ETARIO']]

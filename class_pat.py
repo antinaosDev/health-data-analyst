@@ -224,51 +224,44 @@ def class_pat(df):
     ]}
 }
 
-   # Columnas de diagnóstico
+    # Columnas de diagnóstico
     col_diag = [c for c in df.columns if c.startswith("DIAGNOSTICO")]
 
-    # Convertimos a Polars
-    df_pl = pl.from_pandas(df)
-
-    # Clasificar diagnósticos
+    # Clasificar diagnósticos directamente en Pandas (evita copias pesadas a Polars)
     for col in col_diag:
-        expr = pl.lit("Sin Clasificar")
+        # Inicializar como 'Sin Clasificar'
+        df[f"{col}_CLASIFICADO"] = "Sin Clasificar"
+        
+        # Convertir a string de forma segura y a minúsculas para comparar
+        diag_series = df[col].astype(str).str.strip().str.lower()
+        
         for cat, vals in diccionario.items():
             patron = "|".join([re.escape(f.lower()) for f in vals["PK"]])
-            patron_ci = f"(?i){patron}"  # insensible a mayúsculas
-            expr = pl.when(pl.col(col).str.to_lowercase().str.contains(patron_ci, literal=False))\
-                     .then(pl.lit(cat))\
-                     .otherwise(expr)
-        df_pl = df_pl.with_columns(expr.alias(f"{col}_CLASIFICADO"))
+            
+            # Buscamos coincidencias con regex insensible a mayúsculas
+            mask = diag_series.str.contains(patron, regex=True, na=False)
+            df.loc[mask, f"{col}_CLASIFICADO"] = cat
 
-    # Convertimos a Pandas para facilitar operaciones de agrupación
-    df = df_pl.to_pandas()
+    # Agrupación ultra-eficiente por RUT para obtener conteo de patologías únicas
+    # Extraemos solo RUT y las columnas clasificadas para evitar copiar todo el DataFrame
+    cols_class = [f"{col}_CLASIFICADO" for col in col_diag]
+    if 'RUT' in df.columns and cols_class:
+        df_temp = df[['RUT'] + cols_class].copy()
+        
+        # Flattener (melt) para contar en forma vectorial y limpia
+        df_melted = df_temp.melt(id_vars=['RUT'], value_vars=cols_class, value_name='DIAG')
+        
+        # Filtrar no clasificados y nulos
+        df_melted = df_melted[(df_melted['DIAG'] != 'Sin Clasificar') & (df_melted['DIAG'].notna())]
+        
+        # Agrupar y contar únicos
+        df_num_class = df_melted.groupby('RUT')['DIAG'].nunique()
+        
+        # Asignar directamente usando .map() para evitar copiar las 70 columnas en un merge
+        df['TOTAL_UNICAS'] = df['RUT'].map(df_num_class)
+    else:
+        df['TOTAL_UNICAS'] = 0
 
-    # Crear una columna temporal que combine todos los diagnósticos clasificados en una lista
-    df['ALL_DIAGS'] = df.apply(
-        lambda row: [
-            row['DIAGNOSTICO 1_CLASIFICADO'],
-            row['DIAGNOSTICO 2_CLASIFICADO'],
-            row['DIAGNOSTICO 3_CLASIFICADO']
-        ], axis=1
-    )
+    df['TOTAL_UNICAS'] = df['TOTAL_UNICAS'].fillna(0).astype(int)
 
-    # Función para contar diagnósticos únicos por RUT (excluyendo "Sin Clasificar")
-    def get_unique_diagnostics(series_of_lists):
-        unique = set()
-        for lista in series_of_lists:
-            for diag in lista:
-                if diag != "Sin Clasificar":
-                    unique.add(diag)
-        return len(unique)
-
-    # Agrupar por RUT y obtener conteo de patologías únicas
-    df_num_class = df.groupby("RUT")['ALL_DIAGS'].apply(get_unique_diagnostics).reset_index(name='TOTAL_UNICAS')
-
-    # Merge con el dataframe original
-    df_con = df.merge(df_num_class, on="RUT", how="left")
-
-    # Eliminar columna temporal
-    df_con = df_con.drop(columns=['ALL_DIAGS'], errors='ignore')
-
-    return df_con
+    return df

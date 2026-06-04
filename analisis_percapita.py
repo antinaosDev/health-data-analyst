@@ -18,13 +18,13 @@ st.set_page_config(layout="wide", page_title="Análisis Percápita", page_icon="
 
 # --- FUNCIÓN DE CARGA CON CACHÉ ---
 @st.cache_data(show_spinner="Procesando y consolidando archivos...")
-def cargar_datos_cache(archivos_cargados):
+def cargar_datos_cache_v2(archivos_cargados):
     return reporte_percapita(archivos_cargados)
 
 # --- FUNCIÓN AUXILIAR PARA CONVERTIR DF A CSV ---
 @st.cache_data
-def convert_df_to_csv(df):
-    return df.to_csv(index=False).encode('utf-8-sig') # utf-8-sig para que Excel abra bien las tildes
+def convert_df_to_csv(_df):
+    return _df.to_csv(index=False).encode('utf-8-sig') # utf-8-sig para que Excel abra bien las tildes
 
 # --- ENCABEZADO ---
 st.info(
@@ -46,7 +46,7 @@ with col2:
 # --- LÓGICA PRINCIPAL ---
 if archivos:
     try:
-        df_global, df_auth, df_fall = cargar_datos_cache(archivos)
+        df_global, df_auth, df_fall = cargar_datos_cache_v2(archivos)
     except Exception as e:
         st.error(f"Error al procesar los archivos: {e}")
         st.stop()
@@ -84,12 +84,16 @@ if archivos:
                 # 1. Selector de Rango de Años
                 col_filt_1, col_filt_2 = st.columns(2)
                 with col_filt_1:
-                    opcion_año = st.select_slider(
-                        '1. Seleccione rango de años 📆',
-                        options=año_export_insc,
-                        value=(min(año_export_insc), max(año_export_insc)),
-                        key='slider_insc'
-                    )
+                    if len(año_export_insc) >= 2:
+                        opcion_año = st.select_slider(
+                            '1. Seleccione rango de años 📆',
+                            options=año_export_insc,
+                            value=(min(año_export_insc), max(año_export_insc)),
+                            key='slider_insc'
+                        )
+                    else:
+                        st.info(f"Año único: {año_export_insc[0]}")
+                        opcion_año = (año_export_insc[0], año_export_insc[0])
                 
                 # 2. Selector de Mes de Corte (NUEVO)
                 with col_filt_2:
@@ -168,12 +172,16 @@ if archivos:
     with tab2:
         with st.container(border=True):
             if año_export_fall:
-                opcion_año_fall = st.select_slider(
-                    'Seleccione un rango de años 📆',
-                    options=año_export_fall,
-                    value=(min(año_export_fall), max(año_export_fall)),
-                    key='slider_fall'
-                )
+                if len(año_export_fall) >= 2:
+                    opcion_año_fall = st.select_slider(
+                        'Seleccione un rango de años 📆',
+                        options=año_export_fall,
+                        value=(min(año_export_fall), max(año_export_fall)),
+                        key='slider_fall'
+                    )
+                else:
+                    st.info(f"Año único: {año_export_fall[0]}")
+                    opcion_año_fall = (año_export_fall[0], año_export_fall[0])
                 anio_inicio_f, anio_fin_f = opcion_año_fall
 
                 if not df_fall.empty:

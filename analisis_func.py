@@ -11,9 +11,10 @@ from PIL import Image
 import plotly.express as px 
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
-# --- IMPORTS SEPARADOS CORRECTAMENTE ---
 from class_ges import * 
 from class_pat import *
+
+
 
 #--------------------- FUNCION PARA PROCESAR CSV -----------------------------
 @st.cache_data(ttl=600)
@@ -39,110 +40,36 @@ def proc_csv(archivo,sep=None):
     except Exception as e:
         return None
 
-# ------------------ FUNCIONES DE DESCARGA (CORREGIDAS PARA LISTAS) ------------------
-
-def export_to_excel(df, nombre, anio_filtro=None, mes_filtro=None, columnas=None):
-    """
-    Exporta a Excel permitiendo filtrar por año (lista o único), mes (lista o único) y seleccionar columnas.
-    """
+# ------------------ FUNCIONES DE DESCARGA ------------------
+def export_to_excel(df,nombre,mes,año,rango):
     excel_buffer = io.BytesIO()
-    df_exp = df.copy()
+    if 'ANIO_CORTE' in df.columns:
+        df = df[(df['ANIO_CORTE'] >= rango[0]) & (df['ANIO_CORTE'] <= rango[1])]
 
-    # 1. Filtro por Año (CORREGIDO PARA ACEPTAR LISTAS)
-    if anio_filtro is not None and 'ANIO_CORTE' in df_exp.columns:
-        # Caso A: Es una lista (Multiselect)
-        if isinstance(anio_filtro, list):
-            if len(anio_filtro) > 0:
-                # Convertimos a int cada elemento por seguridad
-                anios_ints = [int(x) for x in anio_filtro]
-                df_exp = df_exp[df_exp['ANIO_CORTE'].isin(anios_ints)]
-        # Caso B: Es un valor único (Selectbox o número)
-        elif isinstance(anio_filtro, (str, int, float)):
-            df_exp = df_exp[df_exp['ANIO_CORTE'] == int(anio_filtro)]
-
-    # 2. Filtro por Mes
-    if mes_filtro is not None and 'MES_CORTE' in df_exp.columns:
-        # Caso A: Es una lista
-        if isinstance(mes_filtro, list):
-            if len(mes_filtro) > 0:
-                df_exp = df_exp[df_exp['MES_CORTE'].isin(mes_filtro)]
-        # Caso B: Es un valor único
-        elif isinstance(mes_filtro, str) and mes_filtro != "Todos":
-            df_exp = df_exp[df_exp['MES_CORTE'] == mes_filtro]
-
-    # 3. Selección de Columnas
-    if columnas is not None and len(columnas) > 0:
-        cols_validas = [c for c in columnas if c in df_exp.columns]
-        if cols_validas:
-            df_exp = df_exp[cols_validas]
-
-    # Escritura
     with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
-        df_exp.to_excel(writer, index=False, sheet_name='DATA')
+        df.to_excel(writer, index=False, sheet_name='DATA')
 
     excel_buffer.seek(0)
-    
-    # Nombre dinámico del archivo
-    nombre_archivo = f"{nombre}"
-    if anio_filtro: nombre_archivo += "_filtrado"
-    nombre_archivo += ".xlsx"
-
     st.download_button(
-        label="📥 Descargar Excel Filtrado",
+        label="📥 Descargar Excel combinado",
         data=excel_buffer,
-        file_name=nombre_archivo,
+        file_name=f"{nombre}_{mes}_{año}.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         use_container_width=True
     )
 
-def export_to_csv(df, nombre, anio_filtro=None, mes_filtro=None, columnas=None):
-    """
-    Exporta a CSV permitiendo filtrar por año (lista o único), mes (lista o único) y seleccionar columnas.
-    """
+def export_to_csv(df,nombre,año,rango):
     csv_buffer = io.BytesIO()
-    df_exp = df.copy()
+    if 'ANIO_CORTE' in df.columns:
+        df = df[(df['ANIO_CORTE'] >= rango[0]) & (df['ANIO_CORTE'] <= rango[1])]
 
-    # 1. Filtro por Año (CORREGIDO PARA ACEPTAR LISTAS)
-    if anio_filtro is not None and 'ANIO_CORTE' in df_exp.columns:
-        # Caso A: Es una lista
-        if isinstance(anio_filtro, list):
-            if len(anio_filtro) > 0:
-                anios_ints = [int(x) for x in anio_filtro]
-                df_exp = df_exp[df_exp['ANIO_CORTE'].isin(anios_ints)]
-        # Caso B: Es un valor único
-        elif isinstance(anio_filtro, (str, int, float)):
-            df_exp = df_exp[df_exp['ANIO_CORTE'] == int(anio_filtro)]
-
-    # 2. Filtro por Mes
-    if mes_filtro is not None and 'MES_CORTE' in df_exp.columns:
-        # Caso A: Es una lista
-        if isinstance(mes_filtro, list):
-            if len(mes_filtro) > 0:
-                df_exp = df_exp[df_exp['MES_CORTE'].isin(mes_filtro)]
-        # Caso B: Es un valor único
-        elif isinstance(mes_filtro, str) and mes_filtro != "Todos":
-            df_exp = df_exp[df_exp['MES_CORTE'] == mes_filtro]
-
-    # 3. Selección de Columnas
-    if columnas is not None and len(columnas) > 0:
-        cols_validas = [c for c in columnas if c in df_exp.columns]
-        if cols_validas:
-            df_exp = df_exp[cols_validas]
-
-    # Escritura
-    csv_content = df_exp.to_csv(index=False).encode('utf-8')
+    csv_content = df.to_csv(index=False).encode('utf-8')
     csv_buffer.write(csv_content)
     csv_buffer.seek(0)
-
-    # Nombre dinámico
-    nombre_archivo = f"{nombre}"
-    if anio_filtro: nombre_archivo += "_filtrado"
-    nombre_archivo += ".csv"
-
     st.download_button(
-        label="📥 Descargar CSV Filtrado",
+        label="📥 Descargar CSV combinado",
         data=csv_buffer,
-        file_name=nombre_archivo,
+        file_name=f"{nombre}_{año}.csv",
         mime="text/csv",
         use_container_width=True
     )
@@ -174,7 +101,6 @@ def export_to_excel_gen(df,nombre,año):
     )
 
 # ------------------ PROCESAMIENTO AGENDA (PRINCIPAL) ------------------
-@st.cache_data(ttl=600)
 def procesamiento_agenda(lista_dfs):
 
     # 1. Concatenar los DataFrames
@@ -248,9 +174,9 @@ def procesamiento_agenda(lista_dfs):
             # Si no existe en el Excel, crearla con "SIN DATOS"
             df_concat[col] = "SIN DATOS"
         else:
-            # Si existe, limpiar
-            df_concat[col] = df_concat[col].fillna("SIN DATOS").astype(str).str.strip().str.upper()
-            df_concat[col] = df_concat[col].replace(['NAN', 'NONE', 'NAT', 'nan'], "SIN DATOS")
+            # Si existe, limpiar convirtiendo a string primero de forma segura para evitar errores de tipo Categorical
+            df_concat[col] = df_concat[col].astype(str).str.strip().str.upper()
+            df_concat[col] = df_concat[col].replace(['NAN', 'NONE', 'NAT', 'nan', '', ' ', 'NULL', '<NA>'], "SIN DATOS")
 
     # =========================================================================
     # 7. LISTA FINAL DE EXPORTACIÓN (Actualizada)
@@ -284,43 +210,56 @@ def procesamiento_agenda(lista_dfs):
     
     # Crear copia final
     df_final = df_concat[cols_work].copy()
-    df_final = df_final.fillna('SIN DATOS')
+    
+    # Rellenar nulos de forma segura para tipos categóricos y de texto sin alterar tipos numéricos o fechas
+    for col in df_final.columns:
+        if isinstance(df_final[col].dtype, pd.CategoricalDtype):
+            if 'SIN DATOS' not in df_final[col].cat.categories:
+                df_final[col] = df_final[col].cat.add_categories('SIN DATOS')
+            df_final[col] = df_final[col].fillna('SIN DATOS')
+        elif df_final[col].dtype == 'object':
+            df_final[col] = df_final[col].fillna('SIN DATOS')
 
     # --- Estandarización General ---
 
     # GENERO
     if "GENERO" in df_final.columns:
-        df_final["GENERO"] = df_final["GENERO"].replace({
-            "HOMBRE": "MASCULINO", "MUJER": "FEMENINO", "M": "MASCULINO", "F": "FEMENINO"
+        df_final["GENERO"] = df_final["GENERO"].astype(str).str.strip().str.upper().replace({
+            "HOMBRE": "MASCULINO", "MUJER": "FEMENINO", "M": "MASCULINO", "F": "FEMENINO",
+            "NAN": "SIN DATOS", "NONE": "SIN DATOS", "NAT": "SIN DATOS", "NULL": "SIN DATOS", "": "SIN DATOS"
         })
 
     # PAIS DE PROCEDENCIA
     if "PAIS DE PROCEDENCIA" in df_final.columns:
-        df_final["PAIS DE PROCEDENCIA"] = df_final["PAIS DE PROCEDENCIA"].replace({"SIN INFORMACION": "SIN DATOS"})
+        df_final["PAIS DE PROCEDENCIA"] = df_final["PAIS DE PROCEDENCIA"].astype(str).str.strip().str.upper().replace({
+            "SIN INFORMACION": "SIN DATOS", "NAN": "SIN DATOS", "NONE": "SIN DATOS", "NAT": "SIN DATOS", "NULL": "SIN DATOS", "": "SIN DATOS"
+        })
 
     # ETNIA
     if "ETNIA PERCEPCION" in df_final.columns:
+        df_final["ETNIA PERCEPCION"] = df_final["ETNIA PERCEPCION"].astype(str).str.strip().str.upper()
         reemplazos_etnia = {
-            "MAPUCHE ": "MAPUCHE", "NINGUNO ": "NINGUNO", "COLLA ": "COLLA",
-            "DIAGUITA ": "DIAGUITA", "QUECHUA ": "QUECHUA", "ATACAMEÑO ": "ATACAMEÑO",
-            "AIMARA ": "AIMARA", "SIN INFORMACION":"SIN DATOS", "NO CONTESTA ": "SIN DATOS",
-            "OTRO PUEBLO ORIGINARIO DECLARADO ": "OTRO PUEBLO ORIGINARIO DECLARADO",
-            "NO SABE ": "SIN DATOS", "ALACALUFE O KAWASHKAR": "ALACALUFE O KAWESQAR",
-            "YAMANA O YAGAN ": "YAMANA O YAGAN", "ATACAMEÑO O LIKANANTAY": "ATACAMEÑO",
-            "AYMARA ": "AIMARA", "ALACALUFE O KAWESQAR ": "ALACALUFE O KAWESQAR"
+            "MAPUCHE": "MAPUCHE", "NINGUNO": "NINGUNO", "COLLA": "COLLA",
+            "DIAGUITA": "DIAGUITA", "QUECHUA": "QUECHUA", "ATACAMEÑO": "ATACAMEÑO",
+            "AIMARA": "AIMARA", "SIN INFORMACION": "SIN DATOS", "NO CONTESTA": "SIN DATOS",
+            "OTRO PUEBLO ORIGINARIO DECLARADO": "OTRO PUEBLO ORIGINARIO DECLARADO",
+            "NO SABE": "SIN DATOS", "ALACALUFE O KAWASHKAR": "ALACALUFE O KAWESQAR",
+            "YAMANA O YAGAN": "YAMANA O YAGAN", "ATACAMEÑO O LIKANANTAY": "ATACAMEÑO",
+            "AYMARA": "AIMARA", "ALACALUFE O KAWESQAR": "ALACALUFE O KAWESQAR",
+            "NAN": "SIN DATOS", "NONE": "SIN DATOS", "NAT": "SIN DATOS", "NULL": "SIN DATOS", "": "SIN DATOS"
         }
         df_final["ETNIA PERCEPCION"] = df_final["ETNIA PERCEPCION"].replace(reemplazos_etnia)
 
     # ESCOLARIDAD
     if "ESCOLARIDAD" in df_final.columns:
-        df_final["ESCOLARIDAD"] = df_final["ESCOLARIDAD"].replace({
-            "NO RESPONDE": "SIN DATOS", "NO RECUERDA": "SIN DATOS", "SIN INFORMACION": "SIN DATOS"
+        df_final["ESCOLARIDAD"] = df_final["ESCOLARIDAD"].astype(str).str.strip().str.upper().replace({
+            "NO RESPONDE": "SIN DATOS", "NO RECUERDA": "SIN DATOS", "SIN INFORMACION": "SIN DATOS",
+            "NAN": "SIN DATOS", "NONE": "SIN DATOS", "NAT": "SIN DATOS", "NULL": "SIN DATOS", "": "SIN DATOS"
         })
 
     # PREVISION
     if "PREVISION" in df_final.columns:
-        df_final["PREVISION"] = df_final["PREVISION"].astype(str).str.strip().str.upper()
-        df_final["PREVISION"] = df_final["PREVISION"].replace({
+        df_final["PREVISION"] = df_final["PREVISION"].astype(str).str.strip().str.upper().replace({
             "ACTUALIZAR INFORMACION": "SIN DATOS", "SIN INFORMACION": "SIN DATOS",
             "INDIGENCIA": "SIN DATOS", "PARTICULAR (SIN PREVISION)": "SIN DATOS",
             "NO RESPONDE": "SIN DATOS"
@@ -435,7 +374,6 @@ def procesamiento_agenda(lista_dfs):
 
 
 #--------------------- REPORTE PERCAPITA -----------------------------
-@st.cache_data(ttl=600)
 def reporte_percapita(archivos):
     if archivos:
         lista = []
@@ -444,7 +382,7 @@ def reporte_percapita(archivos):
         total = len(archivos)
 
         for i, archivo in enumerate(archivos):
-            df = proc_csv(archivo,sep=',')
+            df = proc_csv(archivo, sep=None)
             if df is not None:
                 lista.append(df)
                 my_bar.progress((i + 1) / total, text=f"{i + 1} de {total} archivos procesados")
@@ -463,56 +401,69 @@ def reporte_percapita(archivos):
             df_per['RUT'] = df_per['RUN'].astype(str)
 
         # FECHAS CORTE
-        df_per['FECHA_CORTE'] = pd.to_datetime(df_per['FECHA_CORTE'], errors="coerce")
-        df_per['ANIO_CORTE'] = df_per['FECHA_CORTE'].dt.year
-        MESES_ES = {1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto', 9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'}
-        df_per['MES_CORTE'] = df_per['FECHA_CORTE'].dt.month.map(MESES_ES)
+        if 'FECHA_CORTE' in df_per.columns:
+            df_per['FECHA_CORTE'] = pd.to_datetime(df_per['FECHA_CORTE'], errors="coerce")
+            df_per['ANIO_CORTE'] = df_per['FECHA_CORTE'].dt.year
+            MESES_ES = {1: 'Enero', 2: 'Febrero', 3: 'Marzo', 4: 'Abril', 5: 'Mayo', 6: 'Junio', 7: 'Julio', 8: 'Agosto', 9: 'Septiembre', 10: 'Octubre', 11: 'Noviembre', 12: 'Diciembre'}
+            df_per['MES_CORTE'] = df_per['FECHA_CORTE'].dt.month.map(MESES_ES)
 
         # EDAD
-        df_per["FECHA_NACIMIENTO"] = pd.to_datetime(df_per["FECHA_NACIMIENTO"], errors='coerce')
-        hoy = pd.Timestamp.today()
-        df_per["EDAD"] = df_per["FECHA_NACIMIENTO"].apply(lambda x: hoy.year - x.year - ((hoy.month, hoy.day) < (x.month, x.day)) if pd.notnull(x) else None)
+        if 'FECHA_NACIMIENTO' in df_per.columns:
+            df_per["FECHA_NACIMIENTO"] = pd.to_datetime(df_per["FECHA_NACIMIENTO"], errors='coerce')
+            hoy = pd.Timestamp.today()
+            df_per["EDAD"] = df_per["FECHA_NACIMIENTO"].apply(lambda x: hoy.year - x.year - ((hoy.month, hoy.day) < (x.month, x.day)) if pd.notnull(x) else None)
 
         # GENERO
         if 'GENERO' in df_per.columns:
             df_per['GENERO'] = df_per['GENERO'].replace({'HOMBRE':'MASCULINO','M':'MASCULINO','MUJER':'FEMENINO','F':'FEMENINO'})
 
         # UBICACION CENTROS
-        condicion_4 = [
-            (df_per["NOMBRE_CENTRO"] == "Posta De Salud Rural Huamaqui"),
-            (df_per["NOMBRE_CENTRO"] == "Posta De Salud Rural Huentelar"),
-            (df_per["NOMBRE_CENTRO"] == "Posta De Salud Rural Malalche"),
-            (df_per["NOMBRE_CENTRO"] == "Centro De Salud Familiar Chol Chol"),
-        ]
-        valor_lat = ['-38.459427', '-38.499904', '-38.574594', '-38.607155']
-        valor_long = ['-72.984437', '-72.885185', '-72.945315', '-72.842595']
+        if 'NOMBRE_CENTRO' in df_per.columns:
+            condicion_4 = [
+                (df_per["NOMBRE_CENTRO"] == "Posta De Salud Rural Huamaqui"),
+                (df_per["NOMBRE_CENTRO"] == "Posta De Salud Rural Huentelar"),
+                (df_per["NOMBRE_CENTRO"] == "Posta De Salud Rural Malalche"),
+                (df_per["NOMBRE_CENTRO"] == "Centro De Salud Familiar Chol Chol"),
+            ]
+            valor_lat = ['-38.459427', '-38.499904', '-38.574594', '-38.607155']
+            valor_long = ['-72.984437', '-72.885185', '-72.945315', '-72.842595']
 
-        df_per["LAT_CENTRO"] = np.select(condicion_4,valor_lat,"SIN DATOS")
-        df_per["LONG_CENTRO"] = np.select(condicion_4,valor_long,"SIN DATOS")
+            df_per["LAT_CENTRO"] = np.select(condicion_4,valor_lat,"SIN DATOS")
+            df_per["LONG_CENTRO"] = np.select(condicion_4,valor_long,"SIN DATOS")
 
         # RANGO ETARIO
-        condiciones_5 = [
-            (df_per['EDAD']>=0) & (df_per['EDAD']<=5),
-            (df_per['EDAD']>=6) & (df_per['EDAD']<=11),
-            (df_per['EDAD']>=12) & (df_per['EDAD']<=18),
-            (df_per['EDAD']>=19) & (df_per['EDAD']<=26),
-            (df_per['EDAD']>=27) & (df_per['EDAD']<=59),
-            (df_per["EDAD"]>=60)
-        ]
-        valores_5 = ["Primera infancia", "Infancia", "Adolescencia", "Juventud", "Adultez", "Persona mayor"]
-        df_per['RANGO_ETARIO'] = np.select(condiciones_5,valores_5,'SIN DATOS')
+        if 'EDAD' in df_per.columns:
+            condiciones_5 = [
+                (df_per['EDAD']>=0) & (df_per['EDAD']<=5),
+                (df_per['EDAD']>=6) & (df_per['EDAD']<=11),
+                (df_per['EDAD']>=12) & (df_per['EDAD']<=18),
+                (df_per['EDAD']>=19) & (df_per['EDAD']<=26),
+                (df_per['EDAD']>=27) & (df_per['EDAD']<=59),
+                (df_per["EDAD"]>=60)
+            ]
+            valores_5 = ["Primera infancia", "Infancia", "Adolescencia", "Juventud", "Adultez", "Persona mayor"]
+            df_per['RANGO_ETARIO'] = np.select(condiciones_5,valores_5,'SIN DATOS')
 
         # DUPLICADOS
         df_per.drop_duplicates(inplace=True)
 
+        # NORMALIZAR COLUMNAS PARA EVITAR ERRORES DE ESPACIOS
+        df_per.columns = df_per.columns.str.strip().str.upper()
+
         # AUTORIZADOS
         if 'ACEPTADO_RECHAZADO' in df_per.columns:
-            # Sin filtro forzado de mes aquí, se filtra en la exportación
-            df_per_auth = df_per[(df_per['ACEPTADO_RECHAZADO'] == 'ACEPTADO')]
+            valores_aceptados = ['ACEPTADO', 'AUTORIZADO', 'SI', 'A']
+            mask_aceptado = df_per['ACEPTADO_RECHAZADO'].astype(str).str.strip().str.upper().isin(valores_aceptados)
+            if mask_aceptado.any():
+                # Eliminamos el filtro de max_fecha_auth para que procese todos los archivos subidos
+                df_per_auth = df_per[mask_aceptado].copy()
+            else:
+                df_per_auth = pd.DataFrame()
             
             col_elem = ["RUN","DV","TRASLADO_POSITIVO","TRASLADO_NEGATIVO","EXBLOQUEADO","RECHAZADO_PREVISIONAL","RECHAZADO_FALLECIDO","AUTORIZADO","ACEPTADO_RECHAZADO","MOTIVO"]
             col_elem = [c for c in col_elem if c in df_per_auth.columns]
-            df_per_auth.drop(col_elem,axis=1,inplace=True)
+            if not df_per_auth.empty:
+                df_per_auth.drop(col_elem,axis=1,inplace=True)
         else:
             df_per_auth = df_per.copy()
 
@@ -529,15 +480,7 @@ def reporte_percapita(archivos):
     return df_per,df_per_auth,df_per_fall
 
 
-@st.cache_data(ttl=600)
 def normaliza_direcc(df):
-    import unicodedata
-    def remove_accents(input_str):
-        if not isinstance(input_str, str): return ""
-        nfkd_form = unicodedata.normalize('NFD', input_str)
-        return "".join([c for c in nfkd_form if not unicodedata.combining(c)])
-
-
     
     # --- Funciones de limpieza ---
     def normalizar_texto(texto):
@@ -682,105 +625,7 @@ def normaliza_direcc(df):
     "JUAN SANT": "Juan Santiago",
     "SOTO NEI": "José Soto Neillai Nielaf",
     "AVELINO HUINC": "Avelino Huinca",
-    "ABELINO HUINC": "Avelino Huinca",
-    "JUAN CURIGUAL": "Juan Curigual",
-    "JOSÉ LONCOMIL": "José Loncomil",
-    "SANTOS MARILLAN": "Santos Marillan",
-    "JACINTO CARRASCO LLEUVUL": "Jacinto Carrasco Lleuvul",
-    "CATRILEO LLEUBUL": "Catrileo Lleubul",
-    "PASCUAL COLOMA Y TRIPAILAO": "Pascual Coloma y Tripailao",
-    "MANUEL HUNCHUNAO": "Manuel Hunchunao",
-    "JOSÉ MANUEL GUILCAN": "José Manuel Guilcan",
-    "JUAN HULIPAN": "Juan Hulipan",
-    "ANTONIO RELMUCAO": "Antonio Relmucao",
-    "JOSÉ CHANQUEO": "JOSÉ CHANQUEO",
-    "CARILAF CHIFCA": "Carilaf Chifca",
-    "JOSÉ TRAIPE": "José Traipe",
-    "CALVUNAO CAÑIUPAN": "Calvunao Cañiupan",
-    "PAILLACURA LINCOMIL": "Paillacura Lincomil",
-    "JUAN MULATO": "Juan Mulato",
-    "JOSÉ MIGUEL HUAIQUEan": "José Miguel Huaiquean",
-    "LUCIANO MILLANAO": "Luciano Millanao",
-    "LORENZO TRANAMIL": "Lorenzo Tranamil",
-    "JOSÉ NINO Y OTRO": "JOSÉ NINO Y OTRO",
-    "NAHUELMAN": "Nahuelman",
-    "MULATOCHIGUAIHUE": "MulatoChiguaihue",
-    "ROSARIO MORALES": "Rosario Morales",
-    "LORENZO CALFUQUEO": "Lorenzo Calfuqueo",
-    "JOSÉ NIÑO": "José Niño",
-    "CURIHUAL": "Curihual",
-    "LIINQUEO": "Liinqueo",
-    "QUILIMANZANO SANJOSE": "Quilimanzano-SanJose",
-    "FLORA CHIGUAILLAN V. DE LIENQUEO": "Flora Chiguaillan V. De Lienqueo",
-    "FOYEL V. DE JOSÉ ÑANCULEF": "Foyel V. De José Ñanculef",
-    "JOSÉ CURIQUEO": "José Curiqueo",
-    "JUAN CAYUL": "Juan Cayul",
-    "JUANA CAYUL DE BARRA": "Juana Cayul de Barra",
-    "ANTIONIO": "Antionio",
-    "IGNACIO CARRILLO": "Ignacio Carrillo",
-    "PABLO IGNACIO GUICHAPAN": "Pablo Ignacio Guichapan",
-    "ANTONIO BULNES PAINEMAL": "Antonio Bulnes Painemal",
-    "JUANA QUILACAN DE LEVIPIL": "Juana Quilacan de Levipil",
-    "JOSÉ PAINEMAL": "José Painemal",
-    "JUAN NAHUELPI": "Juan Nahuelpi",
-    "PEDRO ANGEL BEJAR": "Pedro Angel Bejar",
-    "JOSÉ EPULEF": "José Epulef",
-    "LORENZO COLIMAN": "Lorenzo Coliman",
-    "JOSÉ MELINAO": "José Melinao",
-    "HUAMAQUI": "Huamaqui",
-    "HUAMAQUI ALTO": "Huamaqui Alto",
-    "REPOCURA DEUCO": "Repocura Deuco",
-    "EL AROMO": "El Aromo",
-    # --- NUEVOS ELEMENTOS ---
-    "JUAN CURIGUAL": "Juan Curigual",
-    "JOSE LONCOMIL": "José Loncomil",
-    "SANTOS MARILLAN": "Santos Marillan",
-    "JACINTO CARRASCO LLEUVUL": "Jacinto Carrasco Lleuvul",
-    "CATRILEO LLEUBUL": "Catrileo Lleubul",
-    "PASCUAL COLOMA Y TRIPAILAO": "Pascual Coloma y Tripailao",
-    "MANUEL HUNCHUNAO": "Manuel Hunchunao",
-    "JOSE MANUEL GUILCAN": "José Manuel Guilcan",
-    "JUAN HULIPAN": "Juan Hulipan",
-    "ANTONIO RELMUCAO": "Antonio Relmucao",
-    "JOSE CHANQUEO": "JOSÉ CHANQUEO",
-    "CARILAF CHIFCA": "Carilaf Chifca",
-    "JOSE TRAIPE": "José Traipe",
-    "CALVUNAO CANIUPAN": "Calvunao Cañiupan",
-    "PAILLACURA LINCOMIL": "Paillacura Lincomil",
-    "JUAN MULATO": "Juan Mulato",
-    "JOSE MIGUEL HUAIQUEAN": "José Miguel Huaiquean",
-    "LUCIANO MILLANAO": "Luciano Millanao",
-    "LORENZO TRANAMIL": "Lorenzo Tranamil",
-    "JOSE NINO Y OTRO": "JOSÉ NINO Y OTRO",
-    "NAHUELMAN": "Nahuelman",
-    "MULATOCHIGUAIHUE": "MulatoChiguaihue",
-    "ROSARIO MORALES": "Rosario Morales",
-    "LORENZO CALFUQUEO": "Lorenzo Calfuqueo",
-    "JOSE NINO": "José Niño",
-    "CURIHUAL": "Curihual",
-    "LIINQUEO": "Liinqueo",
-    "QUILIMANZANO SANJOSE": "Quilimanzano-SanJose",
-    "FLORA CHIGUAILLAN V. DE LIENQUEO": "Flora Chiguaillan V. De Lienqueo",
-    "FOYEL V. DE JOSE NANCULEF": "Foyel V. De José Ñanculef",
-    "JOSE CURIQUEO": "José Curiqueo",
-    "JUAN CAYUL": "Juan Cayul",
-    "JUANA CAYUL DE BARRA": "Juana Cayul de Barra",
-    "ANTIONIO": "Antionio",
-    "IGNACIO CARRILLO": "Ignacio Carrillo",
-    "PABLO IGNACIO GUICHAPAN": "Pablo Ignacio Guichapan",
-    "ANTONIO BULNES PAINEMAL": "Antonio Bulnes Painemal",
-    "JUANA QUILACAN DE LEVIPIL": "Juana Quilacan de Levipil",
-    "JOSE PAINEMAL": "José Painemal",
-    "JUAN NAHUELPI": "Juan Nahuelpi",
-    "PEDRO ANGEL BEJAR": "Pedro Angel Bejar",
-    "JOSE EPULEF": "José Epulef",
-    "LORENZO COLIMAN": "Lorenzo Coliman",
-    "JOSE MELINAO": "José Melinao",
-    "HUAMAQUI": "Huamaqui",
-    "HUAMAQUI ALTO": "Huamaqui Alto",
-    "REPOCURA DEUCO": "Repocura Deuco",
-    "EL AROMO": "El Aromo",
-
+    "ABELINO HUINC": "Avelino Huinca"
     }
 
     # Diccionario de sectores a distritos
@@ -1029,271 +874,30 @@ def normaliza_direcc(df):
         "CASTELLON":"cholchol",
         "CASRELLON":"cholchol",
         "CULL":"repocura",
-        "SCH":"cholchol",
-        "GUINCA GUENCHULEO": "tranahuillin",
-        "RAMON ANCAMIL": "carirriñe",
-        "FERMIN GUENCHUAL": "tranahuillin",
-        "DIONISIO PAILLAO": "tranahuillin",
-        "MIGUEL LEMUNAO": "cholchol",
-        "BENITO NAIN": "cholchol",
-        "JUAN PEDRO GUILCAN": "cholchol",
-        "DOMINGO COLIN": "repocura",
-        "GUENUL LLANCAL": "repocura",
-        "JUAN CURIGUAL": "repocura",
-        "JOSÉ LONCOMIL": "tranahuillin",
-        "ROSARIO QUEZADA": "cholchol",
-        "DOMINGO MARILLAN": "cholchol",
-        "SANTOS MARILLAN": "cholchol",
-        "JACINTO CARRASCO LLEUVUL": "cholchol",
-        "JUAN MELINAO": "cholchol",
-        "JUAN GUAIQUIL": "cholchol",
-        "MANUEL CAYUNAO": "cholchol",
-        "BENANCIO COÑOEPAN": "cholchol",
-        "CATRILEO LLEUBUL": "cholchol",
-        "PASCUAL COLOMA Y TRIPAILAO": "tranahuillin",
-        "PEDRO GUILCAN": "cholchol",
-        "MANUEL HUNCHUNAO": "cholchol",
-        "JUAN CURALL": "cholchol",
-        "DOMINGO COÑOEPAN": "cholchol",
-        "JOSÉ MANUEL GUILCAN": "cholchol",
-        "JUAN HULIPAN": "repocura",
-        "JUAN LIENAN": "repocura",
-        "JOSÉ CHANQUEO": "tranahuillin",
-        "RAMON PAINEMAL": "rapahue",
-        "PEDRO CAYUQUEO": "rapahue",
-        "JUAN DE DIOS LLEUVUL": "tranahuillin",
-        "FRANCISCO CURIQUEO": "tranahuillin",
-        "CALFULAF": "tranahuillin",
-        "MATEO YAUPI": "tranahuillin",
-        "CARILAF CHIFCA": "tranahuillin",
-        "RAMON ANTILAF": "tranahuillin",
-        "JOSÉ TRAIPE": "tranahuillin",
-        "GABRIEL CHICAHUAL": "tranahuillin",
-        "JOSÉ SOTO NEILLAI NIELAF": "tranahuillin",
-        "DOMINGO CHAÑILLAO": "tranahuillin",
-        "CALVUNAO CAÑIUPAN": "tranahuillin",
-        "PAILLACURA LINCOMIL": "tranahuillin",
-        "JUAN MULATO": "tranahuillin",
-        "JOSÉ MIGUEL HUAIQUEAN": "tranahuillin",
-        "LUCIANO MILLANAO": "tranahuillin",
-        "JUAN CALBUQUEO": "rapahue",
-        "JOSÉ NINO Y OTRO": "rapahue",
-        "TRENG TRENG": "carirriñe",
-        "MANUELHUAL": "rapahue",
-        "FRANCISCO MALIQUEO": "rapahue",
-        "CALVUL COLLIO": "rapahue",
-        "MULATOCHIGUAIHUE": "rapahue",
-        "ROSARIO MORALES": "rapahue",
-        "LORENZO CALFUQUEO": "rapahue",
-        "JOSÉ NIÑO": "rapahue",
-        "CURIHUAL": "rapahue",
-        "LIINQUEO": "rapahue",
-        "QUINTUL V. DE ALCAMAN CAYUL": "carirriñe",
-        "HUENCHUL ANCAMAN COLIPI": "carirriñe",
-        "FLORA CHIGUAILLAN V. DE LIENQUEO": "carirriñe",
-        "FOYEL V. DE JOSÉ ÑANCULEF": "carirriñe",
-        "JOSÉ CURIQUEO": "repocura",
-        "JUAN LEVIO": "repocura",
-        "LORENZO CAYUL": "carirriñe",
-        "JUAN CAYUL": "carirriñe",
-        "JUANA CAYUL DE BARRA": "repocura",
-        "MULATO HUENULEF": "carirriñe",
-        "HUEICHAO MILLAN": "carirriñe",
-        "JUAN MAURICIO GUAIQUEAN": "carirriñe",
-        "MANUEL PAINENAO": "carirriñe",
-        "LEVIN LEMUNAO": "repocura",
-        "ANTIONIO": "carirriñe",
-        "JOSÉ LUIS COLLIO": "carirriñe",
-        "BRIONES PAINEMAL": "carirriñe",
-        "JUANA QUILACAN DE LEVIPIL": "carirriñe",
-        "JOSÉ PAINEMAL": "carirriñe",
-        "PEDRO MARIN CALCUCURA": "repocura",
-        "JUAN AGUSTIN PAINEQUEO": "repocura",
-        "ANSELMO QUINTRIQUEO": "repocura",
-        "ALBERTO BEJAR": "repocura",
-        "FEDERICO ANTINAO": "repocura",
-        "JUAN ANCAYE": "repocura",
-        "PEDRO ANGEL BEJAR": "repocura",
-        "AGUSTÍN CHIHUAICURA": "repocura",
-        "JOSÉ EPULEF": "repocura",
-        "LORENZO COLIMAN": "repocura",
-        "JOSÉ MELINAO": "repocura",
-        "EL AROMO": "repocura",
-    # --- NUEVOS ELEMENTOS ---
-    "GUINCA GUENCHULEO": "tranahuillin",
-    "RAMON ANCAMIL": "carirriñe",
-    "FERMIN GUENCHUAL": "tranahuillin",
-    "DIONISIO PAILLAO": "tranahuillin",
-    "MIGUEL LEMUNAO": "cholchol",
-    "BENITO NAIN": "cholchol",
-    "JUAN PEDRO GUILCAN": "cholchol",
-    "DOMINGO COLIN": "repocura",
-    "GUENUL LLANCAL": "repocura",
-    "JUAN CURIGUAL": "repocura",
-    "JOSE LONCOMIL": "tranahuillin",
-    "ROSARIO QUEZADA": "cholchol",
-    "DOMINGO MARILLAN": "cholchol",
-    "SANTOS MARILLAN": "cholchol",
-    "JACINTO CARRASCO LLEUVUL": "cholchol",
-    "JUAN MELINAO": "cholchol",
-    "JUAN GUAIQUIL": "cholchol",
-    "MANUEL CAYUNAO": "cholchol",
-    "BENANCIO CONOEPAN": "cholchol",
-    "CATRILEO LLEUBUL": "cholchol",
-    "PASCUAL COLOMA Y TRIPAILAO": "tranahuillin",
-    "PEDRO GUILCAN": "cholchol",
-    "MANUEL HUNCHUNAO": "cholchol",
-    "JUAN CURALL": "cholchol",
-    "DOMINGO CONOEPAN": "cholchol",
-    "JOSE MANUEL GUILCAN": "cholchol",
-    "JUAN HULIPAN": "repocura",
-    "JUAN LIENAN": "repocura",
-    "JOSE CHANQUEO": "tranahuillin",
-    "RAMON PAINEMAL": "rapahue",
-    "PEDRO CAYUQUEO": "rapahue",
-    "JUAN DE DIOS LLEUVUL": "tranahuillin",
-    "FRANCISCO CURIQUEO": "tranahuillin",
-    "CALFULAF": "tranahuillin",
-    "MATEO YAUPI": "tranahuillin",
-    "CARILAF CHIFCA": "tranahuillin",
-    "RAMON ANTILAF": "tranahuillin",
-    "JOSE TRAIPE": "tranahuillin",
-    "GABRIEL CHICAHUAL": "tranahuillin",
-    "JOSE SOTO NEILLAI NIELAF": "tranahuillin",
-    "DOMINGO CHANILLAO": "tranahuillin",
-    "CALVUNAO CANIUPAN": "tranahuillin",
-    "PAILLACURA LINCOMIL": "tranahuillin",
-    "JUAN MULATO": "tranahuillin",
-    "JOSE MIGUEL HUAIQUEAN": "tranahuillin",
-    "LUCIANO MILLANAO": "tranahuillin",
-    "JUAN CALBUQUEO": "rapahue",
-    "JOSE NINO Y OTRO": "rapahue",
-    "TRENG TRENG": "carirriñe",
-    "MANUELHUAL": "rapahue",
-    "FRANCISCO MALIQUEO": "rapahue",
-    "CALVUL COLLIO": "rapahue",
-    "MULATOCHIGUAIHUE": "rapahue",
-    "ROSARIO MORALES": "rapahue",
-    "LORENZO CALFUQUEO": "rapahue",
-    "JOSE NINO": "rapahue",
-    "CURIHUAL": "rapahue",
-    "LIINQUEO": "rapahue",
-    "QUINTUL V. DE ALCAMAN CAYUL": "carirriñe",
-    "HUENCHUL ANCAMAN COLIPI": "carirriñe",
-    "FLORA CHIGUAILLAN V. DE LIENQUEO": "carirriñe",
-    "FOYEL V. DE JOSE NANCULEF": "carirriñe",
-    "JOSE CURIQUEO": "repocura",
-    "JUAN LEVIO": "repocura",
-    "LORENZO CAYUL": "carirriñe",
-    "JUAN CAYUL": "carirriñe",
-    "JUANA CAYUL DE BARRA": "repocura",
-    "MULATO HUENULEF": "carirriñe",
-    "HUEICHAO MILLAN": "carirriñe",
-    "JUAN MAURICIO GUAIQUEAN": "carirriñe",
-    "MANUEL PAINENAO": "carirriñe",
-    "LEVIN LEMUNAO": "repocura",
-    "ANTIONIO": "carirriñe",
-    "JOSE LUIS COLLIO": "carirriñe",
-    "BRIONES PAINEMAL": "carirriñe",
-    "JUANA QUILACAN DE LEVIPIL": "carirriñe",
-    "JOSE PAINEMAL": "carirriñe",
-    "PEDRO MARIN CALCUCURA": "repocura",
-    "JUAN AGUSTIN PAINEQUEO": "repocura",
-    "ANSELMO QUINTRIQUEO": "repocura",
-    "ALBERTO BEJAR": "repocura",
-    "FEDERICO ANTINAO": "repocura",
-    "JUAN ANCAYE": "repocura",
-    "PEDRO ANGEL BEJAR": "repocura",
-    "AGUSTIN CHIHUAICURA": "repocura",
-    "JOSE EPULEF": "repocura",
-    "LORENZO COLIMAN": "repocura",
-    "JOSE MELINAO": "repocura",
-    "EL AROMO": "repocura",
-
+        "SCH":"cholchol"
     }
 
     def asignar_comunidad(texto):
         texto = texto.upper()
-        # Ordenar por longitud de clave descendente para evitar falsas coincidencias parciales
-        for sector, distrito in sorted(sector_a_comunidad.items(), key=lambda x: len(x[0]), reverse=True):
+        for sector, distrito in sector_a_comunidad.items():
             if sector in texto:
                 if isinstance(distrito, list): return distrito[0]
                 return distrito
-        return "NO_ESPECIFICADO" 
+        return "NO_ESPECIFICADO"
 
     def asignar_distrito(texto):
         texto = texto.upper()
-        # Ordenar por longitud de clave descendente
-        for sector, distrito in sorted(sector_a_distrito.items(), key=lambda x: len(x[0]), reverse=True):
+        for sector, distrito in sector_a_distrito.items():
             if sector in texto:
                 if isinstance(distrito, list): return distrito[0]
                 return distrito
-        return "NO_ESPECIFICADO" 
-
-    distrito_a_centro = {
-        "cholchol": "Cesfam Cholchol",
-        "tranahuillin": "Cesfam Cholchol",
-        "rapahue": "PSR Malalche",
-        "carirriñe": "PSR Malalche"
-    }
-
-    repocura_comunidad_a_centro = {
-        "QUILIMANZANO SANJOSE": "PSR Malalche",
-        "QUINTUL V. DE ALCAMAN CAYUL": "PSR Malalche",
-        "HUENCHUL ANCAMAN COLIPI": "PSR Malalche",
-        "FLORA CHIGUAILLAN V. DE LIENQUEO": "PSR Malalche",
-        "FOYEL V. DE JOSE NANCULEF": "PSR Malalche",
-        "JOSE CURIQUEO": "PSR Malalche",
-        "JUAN COLIPI HUECHUNAO": "PSR Malalche",
-        "JUAN LEVIO": "PSR Huentelar",
-        "ANTONIO CAYUL": "PSR Malalche",
-        "LORENZO CAYUL": "PSR Malalche",
-        "JUAN CAYUL": "PSR Malalche",
-        "JUANA CAYUL DE BARRA": "PSR Malalche",
-        "MULATO HUENULEF": "PSR Malalche",
-        "HUEICHAO MILLAN": "PSR Malalche",
-        "JUAN CURIGUAL": "PSR Malalche",
-        "GUENUL LLANCAL": "PSR Malalche",
-        "DOMINGO COLIN": "PSR Malalche",
-        "JUAN MAURICIO GUAIQUEAN": "PSR Malalche",
-        "MANUEL PAINENAO": "PSR Malalche",
-        "LEVIN LEMUNAO": "PSR Malalche",
-        "PEDRO MARIN CALCUCURA": "PSR Huentelar",
-        "JUAN AGUSTIN PAINEQUEO": "PSR Huentelar",
-        "JUAN NAHUELPI": "PSR Huentelar",
-        "ANSELMO QUINTRIQUEO": "PSR Huentelar",
-        "JUAN DE DIOS HUICHALEO": "PSR Huentelar",
-        "ALBERTO BEJAR": "PSR Huentelar",
-        "JUAN HULIPAN": "PSR Huentelar",
-        "FEDERICO ANTINAO": "PSR Huentelar",
-        "JUAN LIENAN": "PSR Huentelar",
-        "JUAN ANCAYE": "PSR Huentelar",
-        "PEDRO ANGEL BEJAR": "PSR Huentelar",
-        "AGUSTIN CHIHUAICURA": "PSR Huentelar",
-        "JOSE EPULEF": "PSR Huentelar",
-        "LORENZO COLIMAN": "PSR Huentelar",
-        "JOSE MELINAO": "PSR Huentelar",
-        "HUAMAQUI": "PSR Huamaqui",
-        "HUAMAQUI ALTO": "PSR Huamaqui",
-        "REPOCURA DEUCO": "PSR Huamaqui",
-        "EL AROMO": "PSR Huamaqui"
-    }
+        return "NO_ESPECIFICADO"
 
     df['DISTRITO'] = df['DIRECCION_NORM'].apply(asignar_distrito)
     df['COMUNIDAD'] = df['DIRECCION_NORM'].apply(asignar_comunidad)
 
-    def asignar_centro(row):
-        dist = row['DISTRITO']
-        comunidad = row['COMUNIDAD']
-        if dist == 'repocura':
-            com_clean = remove_accents(comunidad).upper()
-            return repocura_comunidad_a_centro.get(com_clean, "NO_ESPECIFICADO")
-        return distrito_a_centro.get(dist, "NO_ESPECIFICADO")
-
-    df['AREA_INF_CENTRO'] = df.apply(asignar_centro, axis=1)
-
     if 'DIRECCION_NORM' in df.columns:
-        print(df[['DIRECCION_NORM', 'DISTRITO', 'AREA_INF_CENTRO']].head(20))
+        print(df[['DIRECCION_NORM', 'DISTRITO']].head(20))
 
     df['SECTOR'] = 'NO_ESPECIFICADO'
     df['LAT_SEC'] = 'NO_ESPECIFICADO'

@@ -1,0 +1,54 @@
+--- Distribucion de Centros por Distrito ---
+Distrito: Cholchol -> Centros: ['Cesfam Cholchol']
+Distrito: Tranahuillin -> Centros: ['Cesfam Cholchol']
+Distrito: Rapahue -> Centros: ['PSR Malalche']
+Distrito: Repocura -> Centros: ['PSR Malalche', 'PSR Huentelar', 'PSR Huamaqui']
+Distrito: Carirriñe -> Centros: ['PSR Malalche']
+
+--- Comunidades en Repocura por Centro ---
+
+Centro: PSR Malalche (Total 20 communities)
+  - Quilimanzano-SanJose
+  - Quintul V. De Alcaman Cayul
+  - Huenchul Ancaman Colipi
+  - Flora Chiguaillan V. De Lienqueo
+  - Foyel V. De José Ñanculef
+  - José Curiqueo
+  - Juan Colipi Huechunao
+  - Juan Levio
+  - Antonio Cayul
+  - Lorenzo Cayul
+  - Juan Cayul
+  - Juana Cayul de Barra
+  - Mulato Huenulef
+  - Hueichao Millan
+  - Juan Curigual
+  - Guenul Llancal
+  - Domingo Colin
+  - Juan Mauricio Guaiquean
+  - Manuel Painenao
+  - Levin Lemunao
+
+Centro: PSR Huentelar (Total 16 communities)
+  - Pedro Marin Calcucura
+  - Juan Agustin Painequeo
+  - Juan Nahuelpi
+  - Anselmo Quintriqueo
+  - Juan de Dios Huichaleo
+  - Alberto Bejar
+  - Juan Hulipan
+  - Federico Antinao
+  - Juan Lienan
+  - Juan Ancaye
+  - Pedro Angel Bejar
+  - Juan Levio
+  - Agustín Chihuaicura
+  - José Epulef
+  - Lorenzo Coliman
+  - José Melinao
+
+Centro: PSR Huamaqui (Total 4 communities)
+  - Huamaqui
+  - Huamaqui Alto
+  - Repocura Deuco
+  - El Aromo

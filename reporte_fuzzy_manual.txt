@@ -1,0 +1,17 @@
+=== TEST DIFUZO MANUAL ===
+Llaves en diccionario Distrito: 376
+
+Consulta: 'PEDRO CAYUQ'
+  Match: 'PEDRO CAYUQUEO' -> Distrito: 'rapahue'
+
+Consulta: 'HUINCA GUENCHUL'
+  Match: 'GUINCA GUENCHULEO' -> Distrito: 'tranahuillin'
+
+Consulta: 'RAMON ANCAMIL CARIRRINE'
+  Match: 'RAMON ANCAMIL' -> Distrito: 'carirriñe'
+
+Consulta: 'RAYEN LAFKEN'
+  Match: 'RAYEN LAFQUEN' -> Distrito: 'rapahue'
+
+Consulta: 'NAHUELMAN'
+  Match: 'NAHUEL' -> Distrito: 'repocura'
