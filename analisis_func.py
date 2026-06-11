@@ -1123,7 +1123,7 @@ def generar_excel_estadistico(df, col_grupo='GRUPO_ETARIO_QUINQUENAL', tipo_grup
         
         worksheet_inicio.write('B12', 'Elaboración:', format_subtitle)
         
-        fecha_str = pd.Timestamp.today().strftime('%Y-%m-%d %H:%M:%S')
+        fecha_str = pd.Timestamp.today().strftime('%d-%m-%Y')
         elaboracion_str = (
             f"Reporte generado por: {usuario_nombre}\n"
             f"Fecha de generación: {fecha_str}\n"
