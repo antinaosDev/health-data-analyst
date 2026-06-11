@@ -25,6 +25,20 @@ def proc_csv(archivo,sep=None):
         encoding = result['encoding'] or 'latin1'
         archivo.seek(0)
 
+        if sep is None:
+            try:
+                primera_linea = rawdata.decode(encoding).splitlines()[0]
+                if '\t' in primera_linea:
+                    sep = '\t'
+                elif ';' in primera_linea:
+                    sep = ';'
+                elif '|' in primera_linea:
+                    sep = '|'
+                else:
+                    sep = ','
+            except:
+                sep = None # Dejar que pandas intente adivinar
+
         df = pd.read_csv(
             archivo,
             encoding=encoding,
@@ -409,7 +423,7 @@ def reporte_percapita(archivos):
 
         # EDAD
         if 'FECHA_NACIMIENTO' in df_per.columns:
-            df_per["FECHA_NACIMIENTO"] = pd.to_datetime(df_per["FECHA_NACIMIENTO"], errors='coerce')
+            df_per["FECHA_NACIMIENTO"] = pd.to_datetime(df_per["FECHA_NACIMIENTO"], errors='coerce', dayfirst=True)
             hoy = pd.Timestamp.today()
             df_per["EDAD"] = df_per["FECHA_NACIMIENTO"].apply(lambda x: hoy.year - x.year - ((hoy.month, hoy.day) < (x.month, x.day)) if pd.notnull(x) else None)
 
@@ -920,6 +934,373 @@ def normaliza_direcc(df):
     df.drop(columns=['DIRECCION'], errors='ignore', inplace=True)
     
     return df
+
+def asignar_grupo_etario_quinquenal(df):
+    if "EDAD" not in df.columns:
+        df["EDAD"] = 0
+    condiciones = [
+        (df["EDAD"] >= 0) & (df["EDAD"] <= 4),
+        (df["EDAD"] >= 5) & (df["EDAD"] <= 9),
+        (df["EDAD"] >= 10) & (df["EDAD"] <= 14),
+        (df["EDAD"] >= 15) & (df["EDAD"] <= 19),
+        (df["EDAD"] >= 20) & (df["EDAD"] <= 24),
+        (df["EDAD"] >= 25) & (df["EDAD"] <= 29),
+        (df["EDAD"] >= 30) & (df["EDAD"] <= 34),
+        (df["EDAD"] >= 35) & (df["EDAD"] <= 39),
+        (df["EDAD"] >= 40) & (df["EDAD"] <= 44),
+        (df["EDAD"] >= 45) & (df["EDAD"] <= 49),
+        (df["EDAD"] >= 50) & (df["EDAD"] <= 54),
+        (df["EDAD"] >= 55) & (df["EDAD"] <= 59),
+        (df["EDAD"] >= 60) & (df["EDAD"] <= 64),
+        (df["EDAD"] >= 65) & (df["EDAD"] <= 69),
+        (df["EDAD"] >= 70) & (df["EDAD"] <= 74),
+        (df["EDAD"] >= 75) & (df["EDAD"] <= 79),
+        (df["EDAD"] >= 80)
+    ]
+    valores = [
+        "0-4 años", "5-9 años", "10-14 años", "15-19 años", "20-24 años", "25-29 años", 
+        "30-34 años", "35-39 años", "40-44 años", "45-49 años", "50-54 años", "55-59 años", 
+        "60-64 años", "65-69 años", "70-74 años", "75-79 años", "80 y más años"
+    ]
+    df["GRUPO_ETARIO_QUINQUENAL"] = np.select(condiciones, valores, default="SIN DATOS")
+    return df
+
+def asignar_grupo_etario_custom(df, grupos_str):
+    if not grupos_str or not str(grupos_str).strip():
+        return asignar_grupo_etario_quinquenal(df)
+        
+    if "EDAD" not in df.columns:
+        df["EDAD"] = 0
+        
+    grupos = [g.strip() for g in str(grupos_str).split(',')]
+    condiciones = []
+    valores = []
+    
+    for g in grupos:
+        if '-' in g:
+            try:
+                partes = g.replace('años', '').strip().split('-')
+                if len(partes) == 2:
+                    min_age, max_age = int(partes[0]), int(partes[1])
+                    condiciones.append((df["EDAD"] >= min_age) & (df["EDAD"] <= max_age))
+                    valores.append(g)
+            except: pass
+        elif '+' in g:
+            try:
+                min_age = int(g.replace('+', '').replace('años', '').strip())
+                condiciones.append(df["EDAD"] >= min_age)
+                valores.append(g)
+            except: pass
+        elif 'y más' in g:
+            try:
+                min_age = int(g.replace('y más', '').replace('años', '').strip())
+                condiciones.append(df["EDAD"] >= min_age)
+                valores.append(g)
+            except: pass
+            
+    if condiciones:
+        df["GRUPO_ETARIO_CUSTOM"] = np.select(condiciones, valores, default="SIN DATOS")
+    else:
+        return asignar_grupo_etario_quinquenal(df)
+        
+    return df
+
+def generar_excel_estadistico(df, col_grupo='GRUPO_ETARIO_QUINQUENAL', tipo_grupo_nombre='QUINQUENAL', advertencia=None, usuario_nombre='Usuario Desconocido', periodo_evaluacion=None):
+    if 'NOMBRE_CENTRO' in df.columns:
+        centro_col = 'NOMBRE_CENTRO'
+    else:
+        centro_col = 'ESTABLECIMIENTO'
+        
+    cols_group = [centro_col, 'GENERO', col_grupo]
+    for c in cols_group:
+        if c not in df.columns:
+            df[c] = 'SIN DATOS'
+            
+    # Excluir los que no tienen fecha de nacimiento (los agrupados como SIN DATOS) para no contabilizarlos en estadística
+    df_piv = df[df[col_grupo] != 'SIN DATOS'].copy()
+            
+    # Crear tabla pivote
+    pivot_df = pd.pivot_table(
+        df_piv,
+        index=col_grupo,
+        columns=[centro_col, 'GENERO'],
+        aggfunc='size',
+        fill_value=0
+    )
+    
+    # Calcular subtotales por centro (Total por centro)
+    centros_unicos = pivot_df.columns.get_level_values(0).unique()
+    for centro in centros_unicos:
+        # Sumar a través del nivel de Género para el Centro actual
+        pivot_df[(centro, 'TOTAL CENTRO')] = pivot_df[centro].sum(axis=1)
+        
+    # Ordenar columnas para que el TOTAL quede al final de cada centro
+    pivot_df = pivot_df.sort_index(axis=1)
+    
+    # Añadir Fila de Total General
+    pivot_df.loc['TOTAL GENERAL'] = pivot_df.sum()
+    
+    nombre_hoja_stat = f"ESTADISTICA_{tipo_grupo_nombre.upper().replace(' ', '_')}"
+    if len(nombre_hoja_stat) > 31:
+        nombre_hoja_stat = nombre_hoja_stat[:31]
+        
+    excel_buffer = io.BytesIO()
+    with pd.ExcelWriter(excel_buffer, engine='xlsxwriter') as writer:
+        workbook = writer.book
+        
+        # Formatos de Portada
+        format_title = workbook.add_format({'bold': True, 'font_size': 18, 'font_color': '#002060', 'align': 'left'})
+        format_subtitle = workbook.add_format({'bold': True, 'font_size': 14, 'font_color': '#0070C0', 'align': 'left'})
+        format_text = workbook.add_format({'font_size': 11, 'text_wrap': True, 'valign': 'top'})
+        
+        # Nuevos Formatos Institucionales (Azul, Azul Oscuro, Celeste, Blanco, Amarillo, Naranjo)
+        format_centro = workbook.add_format({
+            'bold': True, 'text_wrap': True, 'align': 'center', 'valign': 'vcenter',
+            'fg_color': '#002060', 'font_color': 'white', 'border': 1 # Azul Oscuro
+        })
+        format_genero_f = workbook.add_format({
+            'bold': True, 'align': 'center', 'valign': 'vcenter',
+            'fg_color': '#FF9900', 'font_color': 'white', 'border': 1 # Naranjo
+        })
+        format_genero_m = workbook.add_format({
+            'bold': True, 'align': 'center', 'valign': 'vcenter',
+            'fg_color': '#33CCFF', 'font_color': 'black', 'border': 1 # Celeste
+        })
+        format_genero_o = workbook.add_format({
+            'bold': True, 'align': 'center', 'valign': 'vcenter',
+            'fg_color': '#FFCC00', 'font_color': 'black', 'border': 1 # Amarillo
+        })
+        format_total_col = workbook.add_format({
+            'bold': True, 'align': 'center', 'valign': 'vcenter',
+            'fg_color': '#0070C0', 'font_color': 'white', 'border': 1 # Azul
+        })
+        format_index = workbook.add_format({
+            'bold': True, 'align': 'left', 'valign': 'vcenter',
+            'fg_color': '#FFFFFF', 'border': 1 # Blanco
+        })
+        format_total_row = workbook.add_format({
+            'bold': True, 'align': 'center', 'valign': 'vcenter',
+            'fg_color': '#004B87', 'font_color': 'white', 'border': 1 # Azul intermedio (remplazando al verde)
+        })
+        
+        header_format = workbook.add_format({
+            'bold': True, 'text_wrap': True, 'valign': 'top',
+            'fg_color': '#0070C0', 'font_color': 'white', 'border': 1 # Azul
+        })
+        
+        cell_format = workbook.add_format({'border': 1, 'align': 'center'})
+        warning_format = workbook.add_format({'bold': True, 'font_color': 'red'})
+        
+        # --- Hoja 0: Inicio ---
+        worksheet_inicio = workbook.add_worksheet('Inicio')
+        worksheet_inicio.protect() # Proteger la hoja
+        
+        worksheet_inicio.write('B2', 'Reporte Estadístico de Inscritos Percápita', format_title)
+        
+        if periodo_evaluacion:
+            worksheet_inicio.write('B3', f'Período Evaluado: {periodo_evaluacion}', format_subtitle)
+            
+        # Intentar insertar logo
+        try:
+            logo_path = os.path.join(os.path.dirname(__file__), 'logo_data_s.png')
+            if os.path.exists(logo_path):
+                worksheet_inicio.insert_image('G2', logo_path, {'x_scale': 0.8, 'y_scale': 0.8})
+        except:
+            pass
+            
+        worksheet_inicio.write('B4', 'Metodología y Criterios:', format_subtitle)
+        
+        metodologia = (
+            "Este reporte ha sido generado de manera automática a través de la plataforma de local de apoyo Unidad Percápita Cesfam Cholchol.\n\n"
+            "Criterios aplicados en el análisis:\n"
+            "• Agrupación Etaria: Los datos han sido estructurados según el criterio seleccionado "
+            f"({tipo_grupo_nombre.capitalize()}), calculando las edades al corte correspondiente.\n"
+            "• Fechas Faltantes: Los inscritos sin fecha de nacimiento válida se excluyen del conteo estadístico para no distorsionar "
+            "los totales por rango etario. Sin embargo, dichos usuarios permanecen listados en la hoja 'Detalle Usuarios', y se recomienda agregarlos manualmente.\n"
+            "• Totalización: La tabla suma y agrupa los inscritos estructurándolos por Establecimiento de procedencia y Género."
+        )
+        worksheet_inicio.merge_range('B5:F10', metodologia, format_text)
+        
+        worksheet_inicio.write('B12', 'Elaboración:', format_subtitle)
+        
+        fecha_str = pd.Timestamp.today().strftime('%Y-%m-%d %H:%M:%S')
+        elaboracion_str = (
+            f"Reporte generado por: {usuario_nombre}\n"
+            f"Fecha de generación: {fecha_str}\n"
+        )
+        worksheet_inicio.merge_range('B13:F18', elaboracion_str, format_text)
+        
+        worksheet_inicio.set_column('A:A', 5)
+        worksheet_inicio.set_column('B:G', 15)
+        
+        # --- Hoja 1: Estadística ---
+        worksheet = workbook.add_worksheet(nombre_hoja_stat)
+        
+        start_row = 0
+        if advertencia:
+            worksheet.write('A1', advertencia, warning_format)
+            start_row = 2
+            
+        row_centro = start_row
+        row_genero = start_row + 1
+        row_data_start = start_row + 2
+        
+        worksheet.write(row_genero, 0, "RANGO ETARIO EVALUADO", format_index)
+        worksheet.write(row_centro, 0, "", format_index)
+        
+        col_idx = 1
+        for centro in centros_unicos:
+            generos = [g for c, g in pivot_df.columns if c == centro]
+            span = len(generos)
+            
+            if span > 1:
+                worksheet.merge_range(row_centro, col_idx, row_centro, col_idx + span - 1, centro, format_centro)
+            else:
+                worksheet.write(row_centro, col_idx, centro, format_centro)
+                
+            for genero in generos:
+                if 'FEMENINO' in genero.upper():
+                    fmt = format_genero_f
+                elif 'MASCULINO' in genero.upper():
+                    fmt = format_genero_m
+                elif 'TOTAL' in genero.upper():
+                    fmt = format_total_col
+                else:
+                    fmt = format_genero_o
+                worksheet.write(row_genero, col_idx, genero, fmt)
+                col_idx += 1
+                
+        for r_idx, (idx_val, row) in enumerate(pivot_df.iterrows()):
+            curr_row = row_data_start + r_idx
+            
+            # Formato distinto si es la fila de Total General
+            if idx_val == 'TOTAL GENERAL':
+                worksheet.write(curr_row, 0, str(idx_val), format_total_row)
+                c_idx = 1
+                for val in row:
+                    worksheet.write(curr_row, c_idx, val, format_total_row)
+                    c_idx += 1
+            else:
+                worksheet.write(curr_row, 0, str(idx_val), format_index)
+                c_idx = 1
+                for val in row:
+                    worksheet.write(curr_row, c_idx, val, cell_format)
+                    c_idx += 1
+                
+        worksheet.set_column(0, 0, 25)
+        if len(pivot_df.columns) > 0:
+            worksheet.set_column(1, len(pivot_df.columns), 15)
+            
+        # --- Hoja 2: Gráficos ---
+        worksheet_charts = workbook.add_worksheet('Graficos')
+        
+        chart_centro = workbook.add_chart({'type': 'column', 'subtype': 'stacked'})
+        
+        # Para el gráfico excluiremos la fila de TOTAL GENERAL y la columna TOTAL CENTRO
+        row_count = len(pivot_df) - 1 # exclude TOTAL GENERAL
+        
+        for i, (centro, genero) in enumerate(pivot_df.columns):
+            if 'TOTAL' in genero.upper():
+                continue # no incluir columnas de totales en el gráfico apilado
+                
+            if 'FEMENINO' in genero.upper(): color = '#FF9900'
+            elif 'MASCULINO' in genero.upper(): color = '#33CCFF'
+            else: color = '#FFCC00'
+            
+            chart_centro.add_series({
+                'name':       f"{centro} - {genero}",
+                'categories': [nombre_hoja_stat, row_data_start, 0, row_data_start + row_count - 1, 0],
+                'values':     [nombre_hoja_stat, row_data_start, i + 1, row_data_start + row_count - 1, i + 1],
+                'fill':       {'color': color}
+            })
+            
+        chart_centro.set_title({'name': 'Distribución por Centro, Género y Edad'})
+        chart_centro.set_x_axis({'name': 'Rango Etario'})
+        chart_centro.set_y_axis({'name': 'Cantidad de Inscritos'})
+        chart_centro.set_size({'width': 900, 'height': 500})
+        
+        worksheet_charts.insert_chart('B2', chart_centro)
+
+        # ====== NUEVOS GRÁFICOS (TABLAS DE RESUMEN OCULTAS) ======
+        # Resumen por Centro (Para gráfico Circular)
+        worksheet_charts.write('AA1', 'Centro')
+        worksheet_charts.write('AB1', 'Total Inscritos')
+        row_summary = 1
+        
+        for i, (centro, genero) in enumerate(pivot_df.columns):
+            if genero == 'TOTAL CENTRO':
+                # Obtenemos el total para ese centro
+                val = pivot_df.loc['TOTAL GENERAL', (centro, genero)]
+                worksheet_charts.write(row_summary, 26, centro) # Col AA
+                worksheet_charts.write(row_summary, 27, val)    # Col AB
+                row_summary += 1
+                
+        # Gráfico Circular: Distribución por Centro
+        chart_pie_centro = workbook.add_chart({'type': 'pie'})
+        if row_summary > 1:
+            chart_pie_centro.add_series({
+                'name': 'Distribución por Centro',
+                'categories': ['Graficos', 1, 26, row_summary - 1, 26],
+                'values':     ['Graficos', 1, 27, row_summary - 1, 27],
+                'data_labels': {'percentage': True, 'category': True}
+            })
+            chart_pie_centro.set_title({'name': 'Total Inscritos por Centro'})
+            chart_pie_centro.set_size({'width': 430, 'height': 350})
+            worksheet_charts.insert_chart('B28', chart_pie_centro)
+
+        # Resumen por Centro y Género (Para gráfico de Columnas Agrupadas)
+        worksheet_charts.write('AD1', 'Centro')
+        worksheet_charts.write('AE1', 'Femenino')
+        worksheet_charts.write('AF1', 'Masculino')
+        
+        row_summary_g = 1
+        for centro in centros_unicos:
+            f_val = pivot_df.loc['TOTAL GENERAL', (centro, 'FEMENINO')] if (centro, 'FEMENINO') in pivot_df.columns else 0
+            m_val = pivot_df.loc['TOTAL GENERAL', (centro, 'MASCULINO')] if (centro, 'MASCULINO') in pivot_df.columns else 0
+            worksheet_charts.write(row_summary_g, 29, centro) # Col AD
+            worksheet_charts.write(row_summary_g, 30, f_val)  # Col AE
+            worksheet_charts.write(row_summary_g, 31, m_val)  # Col AF
+            row_summary_g += 1
+            
+        chart_col_centro = workbook.add_chart({'type': 'column', 'subtype': 'grouped'})
+        if row_summary_g > 1:
+            chart_col_centro.add_series({
+                'name': 'Femenino',
+                'categories': ['Graficos', 1, 29, row_summary_g - 1, 29],
+                'values':     ['Graficos', 1, 30, row_summary_g - 1, 30],
+                'fill': {'color': '#FF9900'}
+            })
+            chart_col_centro.add_series({
+                'name': 'Masculino',
+                'categories': ['Graficos', 1, 29, row_summary_g - 1, 29],
+                'values':     ['Graficos', 1, 31, row_summary_g - 1, 31],
+                'fill': {'color': '#33CCFF'}
+            })
+            chart_col_centro.set_title({'name': 'Inscritos por Centro y Género'})
+            chart_col_centro.set_x_axis({'name': 'Centro'})
+            chart_col_centro.set_y_axis({'name': 'Cantidad'})
+            chart_col_centro.set_size({'width': 450, 'height': 350})
+            worksheet_charts.insert_chart('I28', chart_col_centro)
+            
+        # --- Hoja 3: Detalle Usuarios ---
+        nombre_col = 'NOMBRES' if 'NOMBRES' in df.columns else 'NOMBRE'
+        cols_detalle = [c for c in ['RUT', nombre_col, 'GENERO', 'FECHA_NACIMIENTO', 'EDAD', col_grupo, centro_col] if c in df.columns]
+        df_detalle = df[cols_detalle].fillna('SIN DATOS')
+        
+        worksheet_det = workbook.add_worksheet('Detalle Usuarios')
+        for col_num, value in enumerate(df_detalle.columns.values):
+            worksheet_det.write(0, col_num, value, header_format)
+            
+        for row_num in range(len(df_detalle)):
+            for col_num in range(len(df_detalle.columns)):
+                worksheet_det.write(row_num + 1, col_num, df_detalle.iloc[row_num, col_num], cell_format)
+                
+        for i, col in enumerate(df_detalle.columns):
+            max_len = max(df_detalle[col].astype(str).map(len).max(), len(col)) + 2
+            worksheet_det.set_column(i, i, max_len)
+            
+    excel_buffer.seek(0)
+    return excel_buffer
 
 @st.cache_resource
 def load_logo(path):

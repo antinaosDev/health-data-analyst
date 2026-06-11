@@ -117,7 +117,7 @@ with col4:
 with col5:
     st.subheader('💾Seleccione sus archivos .csv:')
     
-    archivos = st.file_uploader("Subir archivos", type='csv', accept_multiple_files=True)
+    archivos = st.file_uploader("Subir archivos", type=['csv', 'txt'], accept_multiple_files=True)
 
     with st.container():
         col1, col2, col3 = st.columns([2, 4, 2])

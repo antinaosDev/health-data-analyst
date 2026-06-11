@@ -23,8 +23,8 @@ def cargar_datos_cache_v2(archivos_cargados):
 
 # --- FUNCIÓN AUXILIAR PARA CONVERTIR DF A CSV ---
 @st.cache_data
-def convert_df_to_csv(_df):
-    return _df.to_csv(index=False, sep=';').encode('utf-8-sig') # utf-8-sig y sep=';' para que Excel abra bien las tildes y columnas
+def convert_df_to_csv(df):
+    return df.to_csv(index=False, sep=';').encode('utf-8-sig') # utf-8-sig y sep=';' para que Excel abra bien las tildes y columnas
 
 # --- ENCABEZADO ---
 st.info(
@@ -134,9 +134,8 @@ if archivos:
                         st.plotly_chart(fig, use_container_width=True)
 
                         st.divider()
-                        st.markdown("#### Configuración de Exportación 📥")
+                        st.markdown("#### Configuración de Exportación y Reporte 📥")
                         
-                        # 3. Selector de Columnas (NUEVO)
                         all_columns = df_filtrado.columns.tolist()
                         col_exp_1, col_exp_2 = st.columns([3, 1])
                         
@@ -144,23 +143,128 @@ if archivos:
                             columnas_seleccionadas = st.multiselect(
                                 "Seleccione las columnas a incluir en el CSV:",
                                 options=all_columns,
-                                default=all_columns, # Por defecto todas
+                                default=all_columns, 
                                 key="cols_insc"
+                            )
+                            
+                            tipo_grupo = st.radio("Tipo de Grupo Etario para Reporte Estadístico:", ["Quinquenal Estándar", "Personalizado"])
+                            if tipo_grupo == "Personalizado":
+                                rangos_custom_str = st.text_input("Definir rangos (ej: 0-14, 15-24, 25-64, 65+):", "0-14, 15-24, 25-64, 65+")
+                                grupos_disp = [g.strip() for g in rangos_custom_str.split(',')]
+                            else:
+                                grupos_disp = [
+                                    "0-4 años", "5-9 años", "10-14 años", "15-19 años", "20-24 años", "25-29 años", 
+                                    "30-34 años", "35-39 años", "40-44 años", "45-49 años", "50-54 años", "55-59 años", 
+                                    "60-64 años", "65-69 años", "70-74 años", "75-79 años", "80 y más años", "SIN DATOS"
+                                ]
+                                
+                            grupos_seleccionados = st.multiselect(
+                                "Seleccione los Grupos Etarios a incluir en el Excel:",
+                                options=grupos_disp,
+                                default=grupos_disp,
+                                key="cols_edad"
                             )
                         
                         with col_exp_2:
                             if columnas_seleccionadas:
-                                # Preparamos el DF final para exportar
-                                df_exportar = df_filtrado[columnas_seleccionadas]
-                                csv_data = convert_df_to_csv(df_exportar)
+                                nulos_fecha = 0
+                                if 'FECHA_NACIMIENTO' in df_filtrado.columns:
+                                    nulos_fecha = df_filtrado['FECHA_NACIMIENTO'].isnull().sum()
                                 
-                                st.download_button(
-                                    label="📥 Descargar CSV",
-                                    data=csv_data,
-                                    file_name=f'Inscritos_Percapita_{mes_corte_seleccionado}_{anio_inicio}-{anio_fin}.csv',
-                                    mime='text/csv',
-                                    use_container_width=True
-                                )
+                                if nulos_fecha > 5:
+                                    st.error(f"❌ Error: Existen {nulos_fecha} registros con la FECHA_NACIMIENTO en blanco. No se puede exportar.")
+                                    st.warning("⚠️ Hay demasiados registros vacíos. Debes corregirlos en tu sistema de origen antes de generar los reportes.")
+                                else:
+                                    df_procesado = df_filtrado.copy()
+                                    advertencia_excel = None
+                                    
+                                    if nulos_fecha > 0:
+                                        st.warning(f"⚠️ Advertencia: Faltan {nulos_fecha} fechas de nacimiento. Puedes agregarlas manualmente aquí:")
+                                        df_errores = df_procesado[df_procesado['FECHA_NACIMIENTO'].isnull()]
+                                        cols_identificacion = [c for c in ['RUT', 'NOMBRES', 'APELLIDO_PATERNO', 'APELLIDO_MATERNO', 'FECHA_NACIMIENTO'] if c in df_errores.columns]
+                                        
+                                        if not cols_identificacion:
+                                            cols_identificacion = df_errores.columns.tolist()
+                                            
+                                        edited_errores = st.data_editor(
+                                            df_errores[cols_identificacion], 
+                                            hide_index=True,
+                                            column_config={
+                                                "FECHA_NACIMIENTO": st.column_config.DateColumn("FECHA_NACIMIENTO", format="DD/MM/YYYY")
+                                            }
+                                        )
+                                        
+                                        for idx, row in edited_errores.iterrows():
+                                            if pd.notnull(row.get('FECHA_NACIMIENTO')):
+                                                nueva_fecha = pd.to_datetime(row['FECHA_NACIMIENTO'], errors='coerce')
+                                                df_procesado.loc[idx, 'FECHA_NACIMIENTO'] = nueva_fecha
+                                                if pd.notnull(nueva_fecha):
+                                                    hoy = pd.Timestamp.today()
+                                                    nueva_edad = hoy.year - nueva_fecha.year - ((hoy.month, hoy.day) < (nueva_fecha.month, nueva_fecha.day))
+                                                    df_procesado.loc[idx, 'EDAD'] = nueva_edad
+                                        
+                                        nulos_restantes = df_procesado['FECHA_NACIMIENTO'].isnull().sum()
+                                        if nulos_restantes > 0:
+                                            ruts_nulos = df_procesado[df_procesado['FECHA_NACIMIENTO'].isnull()]['RUT'].dropna().unique().tolist()
+                                            ruts_str = ", ".join(map(str, ruts_nulos))
+                                            plur = "s" if nulos_restantes > 1 else ""
+                                            n_reg = "registro" if nulos_restantes == 1 else "registros"
+                                            p_presentan = "presenta" if nulos_restantes == 1 else "presentan"
+                                            p_contabilizaron = "contabilizó" if nulos_restantes == 1 else "contabilizaron"
+                                            p_incluyeron = "incluyó" if nulos_restantes == 1 else "incluyeron"
+                                            advertencia_excel = f"Advertencia: {nulos_restantes} {n_reg} (RUT: {ruts_str}) no {p_presentan} fecha de nacimiento, por lo cual no se {p_contabilizaron} ni se {p_incluyeron} en el reporte. Deben añadirse manualmente en su sistema."
+                                        else:
+                                            st.success("✅ ¡Fecha corregida exitosamente! El registro se incluirá completo en el reporte. (Es normal que la advertencia amarilla de arriba siga mostrándose).")
+                                            advertencia_excel = None
+                                    df_exportar = df_procesado[columnas_seleccionadas]
+                                    csv_data = convert_df_to_csv(df_exportar)
+                                    
+                                    st.download_button(
+                                        label="📥 Descargar CSV Consolidado",
+                                        data=csv_data,
+                                        file_name=f'Inscritos_Percapita_{mes_corte_seleccionado}_{anio_inicio}-{anio_fin}.csv',
+                                        mime='text/csv',
+                                        use_container_width=True
+                                    )
+                                    
+                                    df_estadistico = df_procesado.copy()
+                                    if tipo_grupo == "Personalizado":
+                                        df_estadistico = asignar_grupo_etario_custom(df_estadistico, rangos_custom_str)
+                                        col_agrupacion = "GRUPO_ETARIO_CUSTOM"
+                                    else:
+                                        df_estadistico = asignar_grupo_etario_quinquenal(df_estadistico)
+                                        col_agrupacion = "GRUPO_ETARIO_QUINQUENAL"
+                                        
+                                    if grupos_seleccionados:
+                                        df_estadistico = df_estadistico[df_estadistico[col_agrupacion].isin(grupos_seleccionados)]
+                                        
+                                    usuario_nombre = "Usuario Desconocido"
+                                    if "usuario" in st.session_state:
+                                        usuario_nombre = str(st.session_state.get("usuario", "Usuario Desconocido"))
+                                        
+                                    if anio_inicio == anio_fin:
+                                        periodo_str = f"Año único: {anio_inicio} | Mes de Corte: {mes_corte_seleccionado}"
+                                    else:
+                                        periodo_str = f"Rango de años: {anio_inicio} - {anio_fin} | Mes de Corte: {mes_corte_seleccionado}"
+
+                                    try:
+                                        excel_data = generar_excel_estadistico(
+                                            df_estadistico, 
+                                            col_grupo=col_agrupacion, 
+                                            tipo_grupo_nombre=tipo_grupo, 
+                                            advertencia=advertencia_excel,
+                                            usuario_nombre=usuario_nombre,
+                                            periodo_evaluacion=periodo_str
+                                        )
+                                        st.download_button(
+                                            label="📊 Descargar Reporte Estadístico (Excel)",
+                                            data=excel_data,
+                                            file_name=f'Estadistica_Percapita_{mes_corte_seleccionado}_{anio_inicio}-{anio_fin}.xlsx',
+                                            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                            use_container_width=True
+                                        )
+                                    except Exception as e:
+                                        st.error(f"Error generando Excel estadístico: {str(e)}")
                             else:
                                 st.warning("Selecciona al menos una columna.")
                     else:
@@ -270,9 +374,19 @@ if archivos:
                 st.plotly_chart(fig, use_container_width=True)
 
             g4, g5, g6 = st.columns(3)
-            with g4: st.plotly_chart(px.bar(pd.DataFrame({'Tipo': ['Traslado +', 'Traslado -'], 'Cantidad': [df_filtered[df_filtered['TRASLADO_POSITIVO'] == 'X']['RUT'].nunique(), df_filtered[df_filtered['TRASLADO_NEGATIVO'] == 'X']['RUT'].nunique()]}), x='Tipo', y='Cantidad', text='Cantidad', title='Balance Traslados', color='Tipo'), use_container_width=True)
-            with g5: st.plotly_chart(px.bar(pd.DataFrame({'Tipo': ['Nuevo', 'Aceptado'], 'Cantidad': [df_filtered[df_filtered['NUEVO_INSCRITO'] == 'X']['RUT'].nunique(), df_filtered[df_filtered['ACEPTADO_RECHAZADO'] == 'ACEPTADO']['RUT'].nunique()]}), x='Tipo', y='Cantidad', text='Cantidad', title='Nuevos vs Aceptados', color='Tipo'), use_container_width=True)
-            with g6: st.plotly_chart(px.bar(df_filtered.groupby('MOTIVO')['RUT'].nunique().reset_index().sort_values('RUT'), x='RUT', y='MOTIVO', text_auto=True, orientation='h', title='Motivos'), use_container_width=True)
+            with g4: 
+                cant_traslado_pos = df_filtered.loc[df_filtered['TRASLADO_POSITIVO'] == 'X', 'RUT'].nunique() if 'TRASLADO_POSITIVO' in df_filtered.columns else 0
+                cant_traslado_neg = df_filtered.loc[df_filtered['TRASLADO_NEGATIVO'] == 'X', 'RUT'].nunique() if 'TRASLADO_NEGATIVO' in df_filtered.columns else 0
+                df_g4 = pd.DataFrame({'Tipo': ['Traslado +', 'Traslado -'], 'Cantidad': [cant_traslado_pos, cant_traslado_neg]})
+                st.plotly_chart(px.bar(df_g4, x='Tipo', y='Cantidad', text='Cantidad', title='Balance Traslados', color='Tipo'), use_container_width=True)
+            with g5: 
+                cant_nuevo = df_filtered.loc[df_filtered['NUEVO_INSCRITO'] == 'X', 'RUT'].nunique() if 'NUEVO_INSCRITO' in df_filtered.columns else 0
+                cant_aceptado = df_filtered.loc[df_filtered['ACEPTADO_RECHAZADO'] == 'ACEPTADO', 'RUT'].nunique() if 'ACEPTADO_RECHAZADO' in df_filtered.columns else 0
+                df_g5 = pd.DataFrame({'Tipo': ['Nuevo', 'Aceptado'], 'Cantidad': [cant_nuevo, cant_aceptado]})
+                st.plotly_chart(px.bar(df_g5, x='Tipo', y='Cantidad', text='Cantidad', title='Nuevos vs Aceptados', color='Tipo'), use_container_width=True)
+            with g6: 
+                if 'MOTIVO' in df_filtered.columns:
+                    st.plotly_chart(px.bar(df_filtered.groupby('MOTIVO')['RUT'].nunique().reset_index().sort_values('RUT'), x='RUT', y='MOTIVO', text_auto=True, orientation='h', title='Motivos'), use_container_width=True)
 
             # Mapa
             with st.container(border=True):
