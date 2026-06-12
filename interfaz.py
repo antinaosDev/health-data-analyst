@@ -96,6 +96,7 @@ def verificar_login(usuario, password):
             if data.get("USER") == usuario and data.get("PASS") == password:
                 st.session_state["usuario"] = data.get("USER")
                 st.session_state["rol"] = data.get("ROL")
+                st.session_state["nombre_completo"] = data.get("Nombre_completo", data.get("USER"))
                 return True
     return False
 
@@ -147,7 +148,8 @@ if not st.session_state["logged_in"]:
 else:
     # ------------------ BARRA LATERAL (LOGOUT) -------------------
     with st.sidebar:
-        st.markdown(f"👤 **Usuario:** {st.session_state['usuario']}")
+        nombre_mostrar = st.session_state.get('nombre_completo', st.session_state.get('usuario', 'Usuario'))
+        st.markdown(f"👤 **Usuario:** {nombre_mostrar}")
         st.markdown(f"🔑 **Rol:** {st.session_state['rol']}")
         st.divider()
         if st.button("Cerrar Sesión"):

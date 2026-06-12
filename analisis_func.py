@@ -300,8 +300,10 @@ def procesamiento_agenda(lista_dfs):
         df_final["FECHA NACIMIENTO"] = pd.to_datetime(df_final["FECHA NACIMIENTO"], errors='coerce',dayfirst=True)
         hoy = pd.Timestamp.today()
         df_final["EDAD"] = df_final["FECHA NACIMIENTO"].apply(lambda x: hoy.year - x.year - ((hoy.month, hoy.day) < (x.month, x.day)) if pd.notnull(x) else 0)
+        df_final["EDAD_MESES"] = df_final["FECHA NACIMIENTO"].apply(lambda x: (hoy.year - x.year) * 12 + hoy.month - x.month - (1 if hoy.day < x.day else 0) if pd.notnull(x) else 0)
     else:
         df_final["EDAD"] = 0
+        df_final["EDAD_MESES"] = 0
 
     # --- Rango Etario ---
     condiciones = [
@@ -426,6 +428,7 @@ def reporte_percapita(archivos):
             df_per["FECHA_NACIMIENTO"] = pd.to_datetime(df_per["FECHA_NACIMIENTO"], errors='coerce', dayfirst=True)
             hoy = pd.Timestamp.today()
             df_per["EDAD"] = df_per["FECHA_NACIMIENTO"].apply(lambda x: hoy.year - x.year - ((hoy.month, hoy.day) < (x.month, x.day)) if pd.notnull(x) else None)
+            df_per["EDAD_MESES"] = df_per["FECHA_NACIMIENTO"].apply(lambda x: (hoy.year - x.year) * 12 + hoy.month - x.month - (1 if hoy.day < x.day else 0) if pd.notnull(x) else None)
 
         # GENERO
         if 'GENERO' in df_per.columns:
@@ -971,39 +974,139 @@ def asignar_grupo_etario_custom(df, grupos_str):
         
     if "EDAD" not in df.columns:
         df["EDAD"] = 0
+    if "EDAD_MESES" not in df.columns:
+        df["EDAD_MESES"] = df["EDAD"] * 12
         
     grupos = [g.strip() for g in str(grupos_str).split(',')]
     condiciones = []
     valores = []
     
+    import re
+    
     for g in grupos:
-        if '-' in g:
-            try:
-                partes = g.replace('años', '').strip().split('-')
-                if len(partes) == 2:
-                    min_age, max_age = int(partes[0]), int(partes[1])
-                    condiciones.append((df["EDAD"] >= min_age) & (df["EDAD"] <= max_age))
-                    valores.append(g)
-            except: pass
-        elif '+' in g:
-            try:
-                min_age = int(g.replace('+', '').replace('años', '').strip())
-                condiciones.append(df["EDAD"] >= min_age)
-                valores.append(g)
-            except: pass
-        elif 'y más' in g:
-            try:
-                min_age = int(g.replace('y más', '').replace('años', '').strip())
-                condiciones.append(df["EDAD"] >= min_age)
-                valores.append(g)
-            except: pass
+        g_lower = g.lower()
+        
+        # Determinar unidades presentes en todo el grupo
+        has_anos = bool(re.search(r'año[s]?', g_lower))
+        has_meses = 'mes' in g_lower or bool(re.search(r'\d+\s*m\b', g_lower))
+        
+        # Evaluamos en meses si hay alguna mención a meses
+        is_months = has_meses
+        col = "EDAD_MESES" if is_months else "EDAD"
+        
+        # Separar en partes (soporta "0-5" o "0 a 5")
+        partes = []
+        if '-' in g_lower:
+            partes = g_lower.split('-')
+        elif ' a ' in g_lower:
+            partes = g_lower.split(' a ')
+        else:
+            partes = [g_lower]
             
+        limits = []
+        for p in partes:
+            anos = 0
+            meses = 0
+            m_a = re.search(r'(\d+)\s*año[s]?', p)
+            m_m = re.search(r'(\d+)\s*mes[es]?', p)
+            if not m_m: m_m = re.search(r'(\d+)\s*m\b', p)
+            
+            if m_a or m_m:
+                if m_a: anos = int(m_a.group(1))
+                if m_m: meses = int(m_m.group(1))
+                
+                if is_months:
+                    limits.append(anos * 12 + meses)
+                else:
+                    limits.append(anos)
+            else:
+                m_num = re.search(r'(\d+)', p)
+                if m_num:
+                    val = int(m_num.group(1))
+                    if is_months:
+                        # Si evaluamos en meses, un número suelto hereda su unidad del contexto.
+                        # Si se mencionan "años" en el texto, un "3" suelto significa "3 años".
+                        if has_anos:
+                            limits.append(val * 12)
+                        else:
+                            limits.append(val)
+                    else:
+                        limits.append(val)
+                    
+        if len(limits) >= 2:
+            condiciones.append((df[col] >= limits[0]) & (df[col] <= limits[1]))
+            valores.append(g.strip()) # Usa el nombre original como etiqueta
+        elif len(limits) == 1:
+            if '+' in g_lower or 'y más' in g_lower or 'y mas' in g_lower or 'y mayor' in g_lower:
+                condiciones.append(df[col] >= limits[0])
+                valores.append(g.strip())
+            else:
+                # Si es un solo valor sin indicadores de "mayor que", asumimos coincidencia exacta
+                condiciones.append(df[col] == limits[0])
+                valores.append(g.strip())
+                
     if condiciones:
         df["GRUPO_ETARIO_CUSTOM"] = np.select(condiciones, valores, default="SIN DATOS")
     else:
         return asignar_grupo_etario_quinquenal(df)
         
     return df
+
+def obtener_interpretacion_rangos(grupos_str):
+    if not grupos_str or not str(grupos_str).strip():
+        return ""
+    grupos = [g.strip() for g in str(grupos_str).split(',')]
+    interpretaciones = []
+    
+    import re
+    
+    for g in grupos:
+        g_lower = g.lower()
+        
+        has_anos = bool(re.search(r'año[s]?', g_lower))
+        has_meses = 'mes' in g_lower or bool(re.search(r'\d+\s*m\b', g_lower))
+        is_months = has_meses
+        
+        partes = []
+        if '-' in g_lower: partes = g_lower.split('-')
+        elif ' a ' in g_lower: partes = g_lower.split(' a ')
+        else: partes = [g_lower]
+            
+        limits = []
+        for p in partes:
+            anos = 0
+            meses = 0
+            m_a = re.search(r'(\d+)\s*año[s]?', p)
+            m_m = re.search(r'(\d+)\s*mes[es]?', p)
+            if not m_m: m_m = re.search(r'(\d+)\s*m\b', p)
+            
+            if m_a or m_m:
+                if m_a: anos = int(m_a.group(1))
+                if m_m: meses = int(m_m.group(1))
+                
+                if is_months: limits.append(anos * 12 + meses)
+                else: limits.append(anos)
+            else:
+                m_num = re.search(r'(\d+)', p)
+                if m_num:
+                    val = int(m_num.group(1))
+                    if is_months:
+                        if has_anos: limits.append(val * 12)
+                        else: limits.append(val)
+                    else:
+                        limits.append(val)
+                    
+        unit = "meses" if is_months else "años"
+        
+        if len(limits) >= 2:
+            interpretaciones.append(f"({limits[0]} a {limits[1]} {unit})")
+        elif len(limits) == 1:
+            if '+' in g_lower or 'y más' in g_lower or 'y mas' in g_lower or 'y mayor' in g_lower:
+                interpretaciones.append(f"({limits[0]} o más {unit})")
+            else:
+                interpretaciones.append(f"({limits[0]} {unit})")
+                
+    return " | ".join(interpretaciones)
 
 def generar_excel_estadistico(df, col_grupo='GRUPO_ETARIO_QUINQUENAL', tipo_grupo_nombre='QUINQUENAL', advertencia=None, usuario_nombre='Usuario Desconocido', periodo_evaluacion=None):
     if 'NOMBRE_CENTRO' in df.columns:
@@ -1286,6 +1389,19 @@ def generar_excel_estadistico(df, col_grupo='GRUPO_ETARIO_QUINQUENAL', tipo_grup
         nombre_col = 'NOMBRES' if 'NOMBRES' in df.columns else 'NOMBRE'
         cols_detalle = [c for c in ['RUT', nombre_col, 'GENERO', 'FECHA_NACIMIENTO', 'EDAD', col_grupo, centro_col] if c in df.columns]
         df_detalle = df[cols_detalle].fillna('SIN DATOS')
+        
+        if tipo_grupo_nombre == "Personalizado con Fracciones (Meses/Años)" and 'FECHA_NACIMIENTO' in df_detalle.columns and 'EDAD' in df_detalle.columns:
+            fechas_dt = pd.to_datetime(df_detalle['FECHA_NACIMIENTO'], errors='coerce')
+            hoy = pd.Timestamp.today()
+            
+            valid_mask = fechas_dt.notna()
+            anos = hoy.year - fechas_dt.dt.year - ((hoy.month < fechas_dt.dt.month) | ((hoy.month == fechas_dt.dt.month) & (hoy.day < fechas_dt.dt.day))).astype(int)
+            meses_totales = (hoy.year - fechas_dt.dt.year) * 12 + hoy.month - fechas_dt.dt.month - (hoy.day < fechas_dt.dt.day).astype(int)
+            meses = meses_totales % 12
+            
+            formatted_edad = anos[valid_mask].astype(int).astype(str) + " años y " + meses[valid_mask].astype(int).astype(str) + " meses"
+            df_detalle.loc[valid_mask, 'EDAD'] = formatted_edad
+
         
         worksheet_det = workbook.add_worksheet('Detalle Usuarios')
         for col_num, value in enumerate(df_detalle.columns.values):

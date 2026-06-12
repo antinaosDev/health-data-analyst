@@ -147,9 +147,25 @@ if archivos:
                                 key="cols_insc"
                             )
                             
-                            tipo_grupo = st.radio("Tipo de Grupo Etario para Reporte Estadístico:", ["Quinquenal Estándar", "Personalizado"])
-                            if tipo_grupo == "Personalizado":
+                            tipo_grupo = st.radio("Tipo de Grupo Etario para Reporte Estadístico:", [
+                                "Quinquenal Estándar", 
+                                "Personalizado (Años)", 
+                                "Personalizado con Fracciones (Meses/Años)"
+                            ])
+                            
+                            if tipo_grupo == "Personalizado (Años)":
                                 rangos_custom_str = st.text_input("Definir rangos (ej: 0-14, 15-24, 25-64, 65+):", "0-14, 15-24, 25-64, 65+")
+                                interpretacion = obtener_interpretacion_rangos(rangos_custom_str)
+                                if interpretacion:
+                                    st.caption(f"**Interpretación:** {interpretacion}")
+                                grupos_disp = [g.strip() for g in rangos_custom_str.split(',')]
+                            elif tipo_grupo == "Personalizado con Fracciones (Meses/Años)":
+                                rangos_custom_str = st.text_input("Definir rangos explícitos (ej: 0 meses a 2 años y 11 meses, 3 años a 5 años y 11 meses, 6 años a 14 años, 15+ años):", "0 meses a 2 años y 11 meses, 3 años a 5 años y 11 meses, 6 años a 14 años, 15+ años")
+                                
+                                interpretacion = obtener_interpretacion_rangos(rangos_custom_str)
+                                if interpretacion:
+                                    st.caption(f"**Interpretación:** {interpretacion}")
+                                    
                                 grupos_disp = [g.strip() for g in rangos_custom_str.split(',')]
                             else:
                                 grupos_disp = [
@@ -228,7 +244,7 @@ if archivos:
                                     )
                                     
                                     df_estadistico = df_procesado.copy()
-                                    if tipo_grupo == "Personalizado":
+                                    if tipo_grupo in ["Personalizado (Años)", "Personalizado con Fracciones (Meses/Años)"]:
                                         df_estadistico = asignar_grupo_etario_custom(df_estadistico, rangos_custom_str)
                                         col_agrupacion = "GRUPO_ETARIO_CUSTOM"
                                     else:
@@ -239,7 +255,9 @@ if archivos:
                                         df_estadistico = df_estadistico[df_estadistico[col_agrupacion].isin(grupos_seleccionados)]
                                         
                                     usuario_nombre = "Usuario Desconocido"
-                                    if "usuario" in st.session_state:
+                                    if "nombre_completo" in st.session_state and st.session_state["nombre_completo"]:
+                                        usuario_nombre = str(st.session_state["nombre_completo"])
+                                    elif "usuario" in st.session_state:
                                         usuario_nombre = str(st.session_state.get("usuario", "Usuario Desconocido"))
                                         
                                     if anio_inicio == anio_fin:
